@@ -13,7 +13,7 @@ Die Anwendung ist ein Kanban-Task-Manager ähnlich wie Trello.
 * PHP 8.4
 * Doctrine ORM
 * PostgreSQL
-* JWT Authentication (geplant)
+* JWT Authentication
 
 ### Frontend
 
@@ -42,7 +42,7 @@ task-manager/
 ### 1. Repository clonen
 
 ```bash
-git clone https://github.com/DEIN_USERNAME/task-manager.git
+git clone https://github.com/AndreiButalov/task-manager.git
 cd task-manager
 ```
 
@@ -54,19 +54,6 @@ cd task-manager
 cd backend
 
 composer install
-```
-
-### .env konfigurieren
-
-```env
-DATABASE_URL="postgresql://postgres:password@127.0.0.1:5432/taskmanager?serverVersion=17&charset=utf8"
-```
-
-### Datenbank erstellen
-
-```bash
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
 ```
 
 ### Server starten
@@ -140,26 +127,3 @@ http://localhost:5173
 * DELETE /api/tasks/{id}
 
 ---
-
-## 🧠 Lernziel
-
-Dieses Projekt dient dazu, folgende Konzepte zu lernen:
-
-* REST API Entwicklung mit Symfony
-* Vue 3 Composition API
-* Authentication (JWT)
-* Datenbank Design mit Doctrine
-* State Management mit Pinia
-* Fullstack Architektur
-
----
-
-## 📌 Status
-
-🚧 Projekt befindet sich in aktiver Entwicklung
-
----
-
-## 👨‍💻 Autor
-
-Erstellt im Rahmen eines Lernprojekts für Fullstack Development.
