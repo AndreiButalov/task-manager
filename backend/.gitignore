@@ -1,48 +1,50 @@
-
-###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
+# =========================
+# Symfony / PHP
+# =========================
 /vendor/
-###< symfony/framework-bundle ###
-
-###> phpunit/phpunit ###
-/phpunit.xml
-/.phpunit.cache/
-###< phpunit/phpunit ###
-
-###> symfony/asset-mapper ###
+/var/
+/public/bundles/
 /public/assets/
 /assets/vendor/
-###< symfony/asset-mapper ###
 
+# =========================
+# Environment files
+# =========================
+.env
+.env.local
+.env.*.local
 
-# Symfony / PHP
-/vendor/
-/.env.local
-/.env.*.local
+# Symfony secrets
+/config/secrets/
 
-# Logs
-/var/
-/var/log/
+# Symfony CLI
+.symfony.local.yaml
+
+# =========================
+# Cache / Logs
+# =========================
 /var/cache/
+/var/log/
 
+# =========================
 # PHPUnit
+# =========================
 /phpunit.xml
+/.phpunit.cache/
 
-# IDE
+# =========================
+# IDEs
+# =========================
 .idea/
 .vscode/
 
+# =========================
 # Composer
+# =========================
 composer.phar
 
-# Symfony CLI
-/.symfony.local.yaml
-
-# OS
+# =========================
+# OS files
+# =========================
 .DS_Store
 Thumbs.db
