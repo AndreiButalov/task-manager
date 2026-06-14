@@ -3,6 +3,10 @@
 namespace App\Controller;
 
 use App\Repository\TaskListRepository;
+use App\Entity\TaskList;
+use App\Repository\BoardRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -25,5 +29,47 @@ final class TaskListController
         }
 
         return new JsonResponse($data);
+    }
+
+
+    #[Route('/api/tasklists', name: 'api_tasklists_create', methods: ['POST'])]
+    public function create(
+        Request $request,
+        EntityManagerInterface $em,
+        BoardRepository $boardRepository
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+
+        $title = $data['title'] ?? null;
+        $position = $data['position'] ?? 0;
+        $boardId = $data['board_id'] ?? null;
+
+        if (!$title || !$boardId) {
+            return new JsonResponse([
+                'error' => 'title and board_id are required'
+            ], 400);
+        }
+
+        $board = $boardRepository->find($boardId);
+
+        if (!$board) {
+            return new JsonResponse([
+                'error' => 'Board not found'
+            ], 404);
+        }
+
+        $taskList = new TaskList();
+        $taskList->setTitle($title);
+        $taskList->setPosition($position);
+        $taskList->setBoard($board);
+
+        $em->persist($taskList);
+        $em->flush();
+
+        return new JsonResponse([
+            'message' => 'TaskList created',
+            'id' => $taskList->getId(),
+            'title' => $taskList->getTitle()
+        ]);
     }
 }
