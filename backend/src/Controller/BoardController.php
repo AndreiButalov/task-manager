@@ -50,7 +50,7 @@ final class BoardController
         $board->setTitle($title);
         $board->setCreatedAt(new \DateTimeImmutable());
 
-        // 🔥 FIX: Owner setzen (vorübergehend User ID 1)
+        // 🔥 FIX: Owner setzen (vorübergehend User ID 3)
         $user = $userRepository->find(3);
 
         if (!$user) {
