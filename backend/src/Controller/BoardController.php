@@ -70,4 +70,55 @@ final class BoardController
             'title' => $board->getTitle()
         ]);
     }
+
+
+    #[Route('/api/boards/{id}', name: 'api_boards_update', methods: ['PUT'])]
+    public function update(
+        int $id,
+        Request $request,
+        BoardRepository $boardRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $board = $boardRepository->find($id);
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $title = $data['title'] ?? null;
+
+        if (!$title) {
+            return new JsonResponse(['error' => 'Title is required'], 400);
+        }
+
+        $board->setTitle($title);
+
+        $em->flush();
+
+        return new JsonResponse([
+            'message' => 'Board updated',
+            'id' => $board->getId(),
+            'title' => $board->getTitle()
+        ]);
+    }
+
+
+    #[Route('/api/boards/{id}', name: 'api_boards_delete', methods: ['DELETE'])]
+    public function delete(
+        int $id,
+        BoardRepository $boardRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $board = $boardRepository->find($id);
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found'], 404);
+        }
+
+        $em->remove($board);
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Board deleted']);
+    }
 }

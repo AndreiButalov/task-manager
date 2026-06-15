@@ -3,10 +3,59 @@ import { ref, onMounted } from "vue";
 import api from "../services/api";
 
 const boards = ref([]);
+const newTitle = ref("");
+const editingId = ref(null);
+const editTitle = ref("");
+const error = ref("");
 
 async function loadBoards() {
   const response = await api.get("/boards");
   boards.value = response.data;
+}
+
+async function createBoard() {
+  const title = newTitle.value.trim();
+
+  if (!title) {
+    error.value = "Titel darf nicht leer sein";
+    return;
+  }
+
+  await api.post("/boards", {
+    title,
+  });
+
+  newTitle.value = "";
+  await loadBoards();
+}
+
+async function deleteBoard(id) {
+  if (!confirm("Board wirklich löschen?")) return;
+
+  await api.delete(`/boards/${id}`);
+  await loadBoards();
+}
+
+function startEdit(board) {
+  editingId.value = board.id;
+  editTitle.value = board.title;
+}
+
+function cancelEdit() {
+  editingId.value = null;
+  editTitle.value = "";
+}
+
+async function saveEdit(id) {
+  if (!editTitle.value.trim()) return;
+
+  await api.put(`/boards/${id}`, {
+    title: editTitle.value,
+  });
+
+  editingId.value = null;
+  editTitle.value = "";
+  await loadBoards();
 }
 
 onMounted(loadBoards);
@@ -16,9 +65,33 @@ onMounted(loadBoards);
   <div>
     <h1>Boards</h1>
 
+    <!-- CREATE -->
+    <form @submit.prevent="createBoard">
+      <input v-model="newTitle" placeholder="Neues Board..." />
+      <button>Create</button>
+    </form>
+
+    <hr />
+
+    <!-- LIST -->
     <ul>
       <li v-for="board in boards" :key="board.id">
-        {{ board.title }}
+        
+        <!-- EDIT MODE -->
+        <div v-if="editingId === board.id">
+          <input v-model="editTitle" />
+          <button @click="saveEdit(board.id)">Save</button>
+          <button @click="cancelEdit">Cancel</button>
+        </div>
+
+        <!-- NORMAL MODE -->
+        <div v-else>
+          {{ board.title }}
+
+          <button @click="startEdit(board)">Edit</button>
+          <button @click="deleteBoard(board.id)">Delete</button>
+        </div>
+
       </li>
     </ul>
   </div>
