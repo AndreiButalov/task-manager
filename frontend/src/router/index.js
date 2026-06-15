@@ -23,7 +23,7 @@ const router = createRouter({
       component: TaskListView,
     },
     {
-      path: '/tasks/:id',
+      path: '/task/:id',
       name: 'task',
       component: TaskView,
     },
