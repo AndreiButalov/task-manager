@@ -4,7 +4,6 @@
     <p>Willkommen auf der Startseite</p>
     <nav>
       <router-link to="/boards">Zu Boards</router-link>
-      <!-- <router-link to="/tasks">Zu Tasks</router-link> -->
     </nav>
   </div>
 </template>

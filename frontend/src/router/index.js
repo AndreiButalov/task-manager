@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import BoardView from '../views/BoardView.vue'
-// import TasksView from '../views/TasksView.vue'
+import TaskListView from '../views/TaskListView.vue'
+import TaskView from '../views/TaskView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,11 +17,16 @@ const router = createRouter({
       name: 'boards',
       component: BoardView,
     },
-    // {
-    //   path: '/tasks',
-    //   name: 'tasks',
-    //   component: TasksView,
-    // },
+    {
+      path: '/tasklists',
+      name: 'taskList',
+      component: TaskListView,
+    },
+    {
+      path: '/tasks/:id',
+      name: 'task',
+      component: TaskView,
+    },
   ],
 })
 
