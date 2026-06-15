@@ -1,9 +1,9 @@
 <script setup>
-import BoardView from "./views/BoardView.vue";
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <BoardView />
+  <RouterView />
 </template>
 
 
