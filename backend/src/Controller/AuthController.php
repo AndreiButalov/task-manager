@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -62,6 +63,41 @@ final class AuthController
 
         return new JsonResponse([
             'message' => 'User created successfully'
+        ]);
+    }
+
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    public function login(
+        Request $request,
+        UserRepository $userRepository,
+        UserPasswordHasherInterface $passwordHasher,
+        JWTTokenManagerInterface $jwtManager
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
+
+        if (!$email || !$password) {
+            return new JsonResponse([
+                'error' => 'Email and password are required'
+            ], 400);
+        }
+
+        $user = $userRepository->findOneBy(['email' => $email]);
+
+        if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
+            return new JsonResponse([
+                'error' => 'Invalid credentials'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'token' => $jwtManager->create($user),
+            'user' => [
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles(),
+            ],
         ]);
     }
 }
