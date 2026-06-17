@@ -1,0 +1,51 @@
+# Root .gitignore for the Vue + Symfony monorepo
+
+# Node / frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/.vite/
+/frontend/coverage/
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/.eslintcache
+
+# PHP / Symfony
+/backend/vendor/
+/backend/var/
+/backend/public/bundles/
+/backend/public/assets/
+/backend/assets/vendor/
+/backend/config/jwt/*.pem
+/backend/.symfony.local.yaml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*.local
+/backend/.env
+/backend/.env.local
+/backend/.env.*.local
+/backend/config/secrets/
+
+# IDE and editor files
+/.idea/
+/.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
