@@ -257,13 +257,16 @@ final class BoardController
             return new JsonResponse(['error' => 'Access denied'], 403);
         }
 
-        $taskLists = [];
+        $taskLists = $board->getTaskLists()->toArray();
+        usort($taskLists, fn ($a, $b) => ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0));
 
-        foreach ($board->getTaskLists() as $taskList) {
-            $tasks = [];
+        foreach ($taskLists as $taskList) {
+            $tasks = $taskList->getTasks()->toArray();
+            usort($tasks, fn ($a, $b) => ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0));
 
-            foreach ($taskList->getTasks() as $task) {
-                $tasks[] = [
+            $taskData = [];
+            foreach ($tasks as $task) {
+                $taskData[] = [
                     'id' => $task->getId(),
                     'title' => $task->getTitle(),
                     'description' => $task->getDescription(),
@@ -276,7 +279,7 @@ final class BoardController
                 'id' => $taskList->getId(),
                 'title' => $taskList->getTitle(),
                 'position' => $taskList->getPosition(),
-                'tasks' => $tasks,
+                'tasks' => $taskData,
             ];
         }
 
