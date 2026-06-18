@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../services/api";
+import { loadBoards } from '../services/boardService';
 
 const boards = ref([]);
 const newTitle = ref("");
@@ -8,9 +9,8 @@ const editingId = ref(null);
 const editTitle = ref("");
 const error = ref("");
 
-async function loadBoards() {
-  const response = await api.get("/boards");
-  boards.value = response.data;
+async function refreshBoards() {
+  boards.value = await loadBoards();
 }
 
 async function createBoard() {
@@ -26,14 +26,14 @@ async function createBoard() {
   });
 
   newTitle.value = "";
-  await loadBoards();
+  await refreshBoards();
 }
 
 async function deleteBoard(id) {
   if (!confirm("Board wirklich löschen?")) return;
 
   await api.delete(`/boards/${id}`);
-  await loadBoards();
+  await refreshBoards();
 }
 
 async function loadMembers(board) {
@@ -64,10 +64,10 @@ async function saveEdit(id) {
 
   editingId.value = null;
   editTitle.value = "";
-  await loadBoards();
+  await refreshBoards();
 }
 
-onMounted(loadBoards);
+onMounted(refreshBoards);
 </script>
 
 <template>

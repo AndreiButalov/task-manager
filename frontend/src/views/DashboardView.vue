@@ -1,16 +1,15 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { getUser, logout } from '../services/auth'
-import api from "../services/api";
+import { loadBoards } from '../services/boardService';
 import { ref, onMounted } from "vue";
 
 const router = useRouter()
 const user = getUser()
 const boards = ref([]);
 
-async function loadBoards() {
-  const response = await api.get("/boards");
-  boards.value = response.data;
+async function refreshBoards() {
+  boards.value = await loadBoards();
 }
 
 
@@ -19,7 +18,7 @@ const handleLogout = () => {
   router.push({ name: 'login' })
 }
 
-onMounted(loadBoards);
+onMounted(refreshBoards);
 </script>
 
 <template>
