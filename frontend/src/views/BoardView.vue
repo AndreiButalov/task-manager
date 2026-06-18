@@ -88,7 +88,7 @@ onMounted(refreshBoards);
           <button @click="cancelEdit">Cancel</button>
         </div>
         <div v-else>
-          {{ board.title }}
+          <router-link :to="{ name: 'boardSingle', params: { id: board.id } }">{{ board.title }}</router-link>
 
           <button @click="startEdit(board)">Edit</button>
           <button @click="deleteBoard(board.id)">Delete</button>

@@ -232,6 +232,72 @@ final class BoardController
         ]);
     }
 
+    #[Route('/api/boards/{id}', name: 'api_boards_detail', methods: ['GET'])]
+    public function show(
+        int $id,
+        BoardRepository $boardRepository,
+        #[CurrentUser] ?User $currentUser
+    ): JsonResponse {
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'User not authenticated'], 401);
+        }
+
+        $board = $boardRepository->find($id);
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found'], 404);
+        }
+
+        $isOwner = $board->getOwner()?->getId() === $currentUser->getId();
+        $isMember = $board->getMembers()->exists(
+            fn ($key, $member) => $member->getId() === $currentUser->getId()
+        );
+
+        if (!$isOwner && !$isMember) {
+            return new JsonResponse(['error' => 'Access denied'], 403);
+        }
+
+        $taskLists = [];
+
+        foreach ($board->getTaskLists() as $taskList) {
+            $tasks = [];
+
+            foreach ($taskList->getTasks() as $task) {
+                $tasks[] = [
+                    'id' => $task->getId(),
+                    'title' => $task->getTitle(),
+                    'description' => $task->getDescription(),
+                    'position' => $task->getPosition(),
+                    'task_list_id' => $task->getTaskList()?->getId(),
+                ];
+            }
+
+            $taskLists[] = [
+                'id' => $taskList->getId(),
+                'title' => $taskList->getTitle(),
+                'position' => $taskList->getPosition(),
+                'tasks' => $tasks,
+            ];
+        }
+
+        $memberIds = array_map(
+            fn ($member) => $member->getId(),
+            $board->getMembers()->toArray()
+        );
+
+        return new JsonResponse([
+            'id' => $board->getId(),
+            'title' => $board->getTitle(),
+            'createdAt' => $board->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'owner' => [
+                'id' => $board->getOwner()?->getId(),
+                'email' => $board->getOwner()?->getEmail(),
+            ],
+            'memberIds' => $memberIds,
+            'taskLists' => $taskLists,
+        ]);
+    }
+
     #[Route('/api/boards/{id}', name: 'api_boards_update', methods: ['PUT'])]
     public function update(
         int $id,
