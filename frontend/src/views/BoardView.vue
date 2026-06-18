@@ -111,5 +111,6 @@ onMounted(loadBoards);
 
       </li>
     </ul>
+    <div><router-link class="card" to="/dashboard">Dashboard</router-link></div>
   </div>
 </template>
