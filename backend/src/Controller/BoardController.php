@@ -3,28 +3,56 @@
 namespace App\Controller;
 
 use App\Entity\Board;
+use App\Entity\User;
 use App\Repository\BoardRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 final class BoardController
 {
     #[Route('/api/boards', name: 'api_boards_get', methods: ['GET'])]
-    public function index(BoardRepository $boardRepository): JsonResponse
+    public function index(
+        BoardRepository $boardRepository,
+        #[CurrentUser] ?User $currentUser
+    ): JsonResponse
     {
+        if (!$currentUser) {
+            return new JsonResponse([
+                'error' => 'User not authenticated'
+            ], 401);
+        }
+
         $boards = $boardRepository->findAll();
 
         $data = [];
 
         foreach ($boards as $board) {
-            $data[] = [
-                'id' => $board->getId(),
-                'title' => $board->getTitle(),
-                'createdAt' => $board->getCreatedAt()?->format('Y-m-d H:i:s'),
-            ];
+            $isOwner = $board->getOwner()?->getId() === $currentUser->getId();
+            $isMember = $board->getMembers()->exists(
+                fn ($key, $member) => $member->getId() === $currentUser->getId()
+            );
+
+            if ($isOwner || $isMember) {
+                $memberIds = array_map(
+                    fn ($member) => $member->getId(),
+                    $board->getMembers()->toArray()
+                );
+
+                $data[] = [
+                    'id' => $board->getId(),
+                    'title' => $board->getTitle(),
+                    'createdAt' => $board->getCreatedAt()?->format('Y-m-d H:i:s'),
+                    'owner' => [
+                        'id' => $board->getOwner()?->getId(),
+                        'email' => $board->getOwner()?->getEmail(),
+                    ],
+                    'memberIds' => $memberIds,
+                ];
+            }
         }
 
         return new JsonResponse($data);
@@ -34,7 +62,7 @@ final class BoardController
     public function create(
         Request $request,
         EntityManagerInterface $em,
-        UserRepository $userRepository
+        #[CurrentUser] ?User $currentUser
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
@@ -46,21 +74,18 @@ final class BoardController
             ], 400);
         }
 
+        if (!$currentUser) {
+            return new JsonResponse([
+                'error' => 'User not authenticated'
+            ], 401);
+        }
+
         $board = new Board();
         $board->setTitle($title);
         $board->setCreatedAt(new \DateTimeImmutable());
 
-        // 🔥 FIX: Owner setzen (vorübergehend User ID 3)
-        $user = $userRepository->find(3);
-
-        if (!$user) {
-            return new JsonResponse([
-                'error' => 'User not found (ID 3 missing)'
-            ], 500);
-        }
-
-        $board->setOwner($user);
-        $board->addMember($user);
+        $board->setOwner($currentUser);
+        $board->addMember($currentUser);
 
         $em->persist($board);
         $em->flush();
