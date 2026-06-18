@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Task;
 use App\Repository\TaskListRepository;
 use App\Repository\TaskRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,11 +35,11 @@ final class TaskController
     }
 
     #[Route('/api/tasks', name: 'api_tasks_create', methods: ['POST'])]
-public function create(
-    Request $request,
-    EntityManagerInterface $em,
-    TaskListRepository $taskListRepository
-): JsonResponse {
+    public function create(
+        Request $request,
+        EntityManagerInterface $em,
+        TaskListRepository $taskListRepository
+    ): JsonResponse {
     $data = json_decode($request->getContent(), true);
 
     $title = $data['title'] ?? null;
@@ -75,5 +76,84 @@ public function create(
         'id' => $task->getId(),
         'title' => $task->getTitle()
     ]);
-}
+    }
+
+    #[Route('/api/tasks/{id}/available-assignees', name: 'api_tasks_available_assignees', methods: ['GET'])]
+    public function availableAssignees(
+        int $id,
+        TaskRepository $taskRepository
+    ): JsonResponse {
+        $task = $taskRepository->find($id);
+
+        if (!$task) {
+            return new JsonResponse(['error' => 'Task not found'], 404);
+        }
+
+        $board = $task->getTaskList()?->getBoard();
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found for this task'], 404);
+        }
+
+        $data = [];
+
+        foreach ($board->getMembers() as $member) {
+            $data[] = [
+                'id' => $member->getId(),
+                'email' => $member->getEmail(),
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
+    #[Route('/api/tasks/{id}/assignees', name: 'api_tasks_add_assignee', methods: ['POST'])]
+    public function addAssignee(
+        int $id,
+        Request $request,
+        TaskRepository $taskRepository,
+        EntityManagerInterface $em,
+        UserRepository $userRepository
+    ): JsonResponse {
+        $task = $taskRepository->find($id);
+
+        if (!$task) {
+            return new JsonResponse(['error' => 'Task not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $userId = $data['user_id'] ?? null;
+
+        if (!$userId) {
+            return new JsonResponse(['error' => 'user_id is required'], 400);
+        }
+
+        $user = $userRepository->find($userId);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        $board = $task->getTaskList()?->getBoard();
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found for this task'], 404);
+        }
+
+        if (!$board->getMembers()->contains($user)) {
+            return new JsonResponse(['error' => 'User is not a member of the board'], 400);
+        }
+
+        if ($task->getAssignees()->contains($user)) {
+            return new JsonResponse(['error' => 'User is already assigned'], 400);
+        }
+
+        $task->addAssignee($user);
+        $em->flush();
+
+        return new JsonResponse([
+            'message' => 'Assignee added',
+            'user_id' => $user->getId(),
+        ]);
+    }
 }

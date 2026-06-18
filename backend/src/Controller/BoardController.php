@@ -60,6 +60,7 @@ final class BoardController
         }
 
         $board->setOwner($user);
+        $board->addMember($user);
 
         $em->persist($board);
         $em->flush();
@@ -71,6 +72,140 @@ final class BoardController
         ]);
     }
 
+    #[Route('/api/boards/{id}/members', name: 'api_boards_members_get', methods: ['GET'])]
+    public function members(
+        int $id,
+        BoardRepository $boardRepository
+    ): JsonResponse {
+        $board = $boardRepository->find($id);
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found'], 404);
+        }
+
+        $data = [];
+
+        foreach ($board->getMembers() as $member) {
+            $data[] = [
+                'id' => $member->getId(),
+                'email' => $member->getEmail(),
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
+    #[Route('/api/boards/{id}/available-members', name: 'api_boards_available_members', methods: ['GET'])]
+    public function availableMembers(
+        int $id,
+        BoardRepository $boardRepository,
+        UserRepository $userRepository
+    ): JsonResponse {
+        $board = $boardRepository->find($id);
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found'], 404);
+        }
+
+        $memberIds = array_map(
+            fn ($member) => $member->getId(),
+            $board->getMembers()->toArray()
+        );
+
+        $available = [];
+
+        foreach ($userRepository->findAll() as $user) {
+            if ($user->getId() === $board->getOwner()?->getId()) {
+                continue;
+            }
+
+            if (!in_array($user->getId(), $memberIds, true)) {
+                $available[] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                ];
+            }
+        }
+
+        return new JsonResponse($available);
+    }
+
+    #[Route('/api/boards/{id}/members', name: 'api_boards_members_add', methods: ['POST'])]
+    public function addMember(
+        int $id,
+        Request $request,
+        BoardRepository $boardRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $board = $boardRepository->find($id);
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $userId = $data['user_id'] ?? null;
+
+        if (!$userId) {
+            return new JsonResponse(['error' => 'user_id is required'], 400);
+        }
+
+        $user = $userRepository->find($userId);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        if ($board->getOwner()?->getId() === $user->getId()) {
+            return new JsonResponse(['error' => 'Owner is already part of the board'], 400);
+        }
+
+        if ($board->getMembers()->contains($user)) {
+            return new JsonResponse(['error' => 'User is already a member'], 400);
+        }
+
+        $board->addMember($user);
+        $em->flush();
+
+        return new JsonResponse([
+            'message' => 'Member added',
+            'user_id' => $user->getId(),
+        ]);
+    }
+
+    #[Route('/api/boards/{id}/members/{userId}', name: 'api_boards_members_remove', methods: ['DELETE'])]
+    public function removeMember(
+        int $id,
+        int $userId,
+        BoardRepository $boardRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $board = $boardRepository->find($id);
+
+        if (!$board) {
+            return new JsonResponse(['error' => 'Board not found'], 404);
+        }
+
+        $user = $userRepository->find($userId);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        if (!$board->getMembers()->contains($user)) {
+            return new JsonResponse(['error' => 'User is not a board member'], 400);
+        }
+
+        $board->removeMember($user);
+        $em->flush();
+
+        return new JsonResponse([
+            'message' => 'Member removed',
+            'user_id' => $user->getId(),
+        ]);
+    }
 
     #[Route('/api/boards/{id}', name: 'api_boards_update', methods: ['PUT'])]
     public function update(

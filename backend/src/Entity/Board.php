@@ -26,6 +26,13 @@ class Board
     private ?User $owner = null;
 
     /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\JoinTable(name: 'board_members')]
+    private Collection $members;
+
+    /**
      * @var Collection<int, TaskList>
      */
     #[ORM\OneToMany(targetEntity: TaskList::class, mappedBy: 'board')]
@@ -33,6 +40,7 @@ class Board
 
     public function __construct()
     {
+        $this->members = new ArrayCollection();
         $this->taskLists = new ArrayCollection();
     }
 
@@ -73,6 +81,30 @@ class Board
     public function setOwner(?User $owner): static
     {
         $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getMembers(): Collection
+    {
+        return $this->members;
+    }
+
+    public function addMember(User $user): static
+    {
+        if (!$this->members->contains($user)) {
+            $this->members->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeMember(User $user): static
+    {
+        $this->members->removeElement($user);
 
         return $this;
     }
