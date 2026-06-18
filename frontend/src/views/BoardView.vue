@@ -36,6 +36,15 @@ async function deleteBoard(id) {
   await loadBoards();
 }
 
+async function loadMembers(board) {
+  const response = await api.get(`/boards/${board.id}/members`);
+  board.members = response.data;
+}
+
+function hideMembers(board) {
+  delete board.members;
+}
+
 function startEdit(board) {
   editingId.value = board.id;
   editTitle.value = board.title;
@@ -90,6 +99,14 @@ onMounted(loadBoards);
 
           <button @click="startEdit(board)">Edit</button>
           <button @click="deleteBoard(board.id)">Delete</button>
+          <button @click="loadMembers(board)">Mitglieder laden</button>
+          <button v-if="board.members" @click="hideMembers(board)">Mitglieder ausblenden</button>
+
+          <ul v-if="board.members">
+            <li v-for="member in board.members" :key="member.id">
+              {{ member.email }}
+            </li>
+          </ul>
         </div>
 
       </li>
