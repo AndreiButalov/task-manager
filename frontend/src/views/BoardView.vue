@@ -73,8 +73,6 @@ onMounted(loadBoards);
 <template>
   <div>
     <h1>Boards</h1>
-
-    <!-- CREATE -->
     <form @submit.prevent="createBoard">
       <input v-model="newTitle" placeholder="Neues Board..." />
       <button>Create</button>
@@ -82,18 +80,13 @@ onMounted(loadBoards);
 
     <hr />
 
-    <!-- LIST -->
     <ul>
-      <li v-for="board in boards" :key="board.id">
-        
-        <!-- EDIT MODE -->
+      <li v-for="board in boards" :key="board.id">        
         <div v-if="editingId === board.id">
           <input v-model="editTitle" />
           <button @click="saveEdit(board.id)">Save</button>
           <button @click="cancelEdit">Cancel</button>
         </div>
-
-        <!-- NORMAL MODE -->
         <div v-else>
           {{ board.title }}
 

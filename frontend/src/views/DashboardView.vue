@@ -1,3 +1,27 @@
+<script setup>
+import { useRouter } from 'vue-router'
+import { getUser, logout } from '../services/auth'
+import api from "../services/api";
+import { ref, onMounted } from "vue";
+
+const router = useRouter()
+const user = getUser()
+const boards = ref([]);
+
+async function loadBoards() {
+  const response = await api.get("/boards");
+  boards.value = response.data;
+}
+
+
+const handleLogout = () => {
+  logout()
+  router.push({ name: 'login' })
+}
+
+onMounted(loadBoards);
+</script>
+
 <template>
   <div class="dashboard">
     <header class="dashboard-header">
@@ -17,6 +41,19 @@
     </section>
 
     <section class="panel">
+      <h2>Du bist in diese Boards angemeldet:</h2>
+
+      <ul class="board-list">
+        <li v-for="board in boards" :key="board.id" class="board-item">
+          {{ board.title }}
+        </li>
+      </ul>
+
+
+
+    </section>
+
+    <section class="panel">
       <h2>Was du als nächstes tun kannst</h2>
       <ul>
         <li>Erstelle neue Boards und verwalte deine Aufgaben.</li>
@@ -24,21 +61,11 @@
         <li>Öffne ein bestehendes Board, um direkt loszulegen.</li>
       </ul>
     </section>
+
   </div>
 </template>
 
-<script setup>
-import { useRouter } from 'vue-router'
-import { getUser, logout } from '../services/auth'
 
-const router = useRouter()
-const user = getUser()
-
-const handleLogout = () => {
-  logout()
-  router.push({ name: 'login' })
-}
-</script>
 
 <style scoped>
 .dashboard {
