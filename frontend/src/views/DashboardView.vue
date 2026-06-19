@@ -1,54 +1,104 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { getUser, logout } from '../services/auth'
-import { loadBoards, loadBoard } from '../services/boardService';
-import { ref, computed, onMounted } from "vue";
+import { logout } from '../services/auth'
+import { loadBoards, loadBoard } from '../services/boardService'
+import { loadProfile } from '../services/boardService'
+import { ref, onMounted, computed } from "vue"
 
 const router = useRouter()
-const user = ref(getUser());
-const boards = ref([]);
-const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 });
+
+// PROFILE STATE
+const firstName = ref("")
+const lastName = ref("")
+const email = ref("")
+
+// BOARDS STATE
+const boards = ref([])
+
+// STATS STATE
+const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 })
+
+// DISPLAY NAME (WICHTIG)
+const displayName = computed(() => {
+  if (firstName.value || lastName.value) {
+    return `${firstName.value ?? ""} ${lastName.value ?? ""}`.trim()
+  }
+  return email.value || "Nutzer"
+})
+
+/* ---------------- BOARDS ---------------- */
 
 async function refreshBoards() {
-  boards.value = await loadBoards();
-  await loadTaskStats();
+  boards.value = await loadBoards()
+  await loadTaskStats()
 }
+
+/* ---------------- TASK STATS ---------------- */
 
 async function loadTaskStats() {
-  const loadedBoards = await Promise.all(boards.value.map(board => loadBoard(board.id)));
-  const allTasks = loadedBoards.flatMap(board => board.taskLists?.flatMap(list => list.tasks || []) || []);
+  const loadedBoards = await Promise.all(
+    boards.value.map(board => loadBoard(board.id))
+  )
 
-  stats.value.total = allTasks.length;
-  stats.value.todo = allTasks.filter(task => task.task_list_id && loadedBoards.some(board => {
-    const list = board.taskLists?.find(l => l.id === task.task_list_id);
-    return list?.title?.toLowerCase() === 'todo';
-  })).length;
-  stats.value.inProgress = allTasks.filter(task => task.task_list_id && loadedBoards.some(board => {
-    const list = board.taskLists?.find(l => l.id === task.task_list_id);
-    return list?.title?.toLowerCase() === 'in progress';
-  })).length;
-  stats.value.done = allTasks.filter(task => task.task_list_id && loadedBoards.some(board => {
-    const list = board.taskLists?.find(l => l.id === task.task_list_id);
-    return list?.title?.toLowerCase() === 'done';
-  })).length;
+  const allTasks = loadedBoards.flatMap(
+    board => board.taskLists?.flatMap(list => list.tasks || []) || []
+  )
+
+  stats.value.total = allTasks.length
+
+  stats.value.todo = allTasks.filter(task =>
+    loadedBoards.some(board =>
+      board.taskLists?.find(l =>
+        l.id === task.task_list_id &&
+        l.title?.toLowerCase() === 'todo'
+      )
+    )
+  ).length
+
+  stats.value.inProgress = allTasks.filter(task =>
+    loadedBoards.some(board =>
+      board.taskLists?.find(l =>
+        l.id === task.task_list_id &&
+        l.title?.toLowerCase() === 'in progress'
+      )
+    )
+  ).length
+
+  stats.value.done = allTasks.filter(task =>
+    loadedBoards.some(board =>
+      board.taskLists?.find(l =>
+        l.id === task.task_list_id &&
+        l.title?.toLowerCase() === 'done'
+      )
+    )
+  ).length
 }
 
-const displayName = computed(() => {
-  if (user.value?.firstName || user.value?.lastName) {
-    return `${user.value?.first_ame ?? ""} ${user.value?.lastName ?? ""}`.trim();
-  }
+/* ---------------- PROFILE ---------------- */
 
-  console.log(user.value?.firstName);
-  
-  return user.value?.email || "Nutzer";
-});
+async function load() {
+  const profile = await loadProfile()
+
+  firstName.value = profile.firstName
+  lastName.value = profile.lastName
+  email.value = profile.email
+}
+
+/* ---------------- LOGOUT ---------------- */
 
 const handleLogout = () => {
   logout()
   router.push({ name: 'login' })
 }
 
-onMounted(refreshBoards);
+/* ---------------- INIT ---------------- */
+
+onMounted(async () => {
+  await Promise.all([
+    refreshBoards(),
+    load()
+  ])
+})
 </script>
 
 <template>
@@ -56,56 +106,63 @@ onMounted(refreshBoards);
     <header class="dashboard-header">
       <div>
         <h1>Dashboard</h1>
-        <p>Willkommen zurück, {{ displayName }}.</p>
+        <p>
+          Willkommen zurück, {{ displayName }}.
+        </p>
       </div>
       <div class="setting">
         <router-link class="to_profile" to="/profile">
           Profil bearbeiten
         </router-link>
-        <button @click="handleLogout">Abmelden</button>
+        <button @click="handleLogout">
+          Abmelden
+        </button>
       </div>
-
     </header>
 
     <section class="panel">
       <h2>Schnellzugriff</h2>
       <div class="cards">
-        <router-link class="card" to="/boards">To Boards</router-link>
+        <router-link class="card" to="/boards">
+          To Boards
+        </router-link>
       </div>
     </section>
 
     <section class="panel">
       <h2>Du bist in diese Boards angemeldet:</h2>
-
       <ul class="board-list">
-        <li v-for="board in boards" :key="board.id" class="board-item">
+        <li v-for="board in boards" :key="board.id">
           {{ board.title }}
         </li>
       </ul>
-
-
-
     </section>
-
+    
     <section class="panel stats-panel">
       <h2>Deine Aufgaben-Übersicht</h2>
+
       <div class="stats-grid">
+
         <div class="stat-card">
           <span class="stat-label">Gesamt</span>
           <strong>{{ stats.total }}</strong>
         </div>
+
         <div class="stat-card">
           <span class="stat-label">Todo</span>
           <strong>{{ stats.todo }}</strong>
         </div>
+
         <div class="stat-card">
           <span class="stat-label">In Progress</span>
           <strong>{{ stats.inProgress }}</strong>
         </div>
+
         <div class="stat-card">
           <span class="stat-label">Done</span>
           <strong>{{ stats.done }}</strong>
         </div>
+
       </div>
     </section>
 

@@ -9,48 +9,52 @@ const email = ref("");
 const success = ref("");
 
 async function load() {
-  const profile = await loadProfile();
+    const profile = await loadProfile();
 
-  firstName.value = profile.firstName;
-  lastName.value = profile.lastName;
-  email.value = profile.email;
+    firstName.value = profile.firstName;
+    lastName.value = profile.lastName;
+    email.value = profile.email;
 }
 
 async function saveProfile() {
-  await api.put("/me", {
-    firstName: firstName.value,
-    lastName: lastName.value,
-  });
+    await api.put("/me", {
+        firstName: firstName.value,
+        lastName: lastName.value,
+    });
 
-  success.value = "Profil gespeichert!";
+    success.value = "Profil gespeichert!";
 }
 
 onMounted(load);
 </script>
 
 <template>
-  <div>
-    <h1>Profil bearbeiten</h1>
-
     <div>
-      <label>Vorname</label>
-      <input v-model="firstName" />
+        <h1>Profil bearbeiten</h1>
+
+        <div>
+            <label>Vorname</label>
+            <input v-model="firstName" />
+        </div>
+
+        <div>
+            <label>Nachname</label>
+            <input v-model="lastName" />
+        </div>
+
+        <div>
+            <label>E-Mail</label>
+            <input :value="email" disabled />
+        </div>
+
+        <button @click="saveProfile">
+            Speichern
+        </button>
+
+        <router-link class="to_profile" to="/dashboard">
+            Dashboard
+        </router-link>
+
+        <p v-if="success">{{ success }}</p>
     </div>
-
-    <div>
-      <label>Nachname</label>
-      <input v-model="lastName" />
-    </div>
-
-    <div>
-      <label>E-Mail</label>
-      <input :value="email" disabled />
-    </div>
-
-    <button @click="saveProfile">
-      Speichern
-    </button>
-
-    <p v-if="success">{{ success }}</p>
-  </div>
 </template>
