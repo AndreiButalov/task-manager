@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { loadBoard, createTask, createTaskList } from '../services/boardService';
+import { loadBoard, createTask, createTaskList, updateTask, deleteTask } from '../services/boardService';
 
 const route = useRoute();
 const router = useRouter();
@@ -13,6 +13,9 @@ const columnTitles = ['Todo', 'In Progress', 'Done'];
 const newTaskTitles = ref({ 0: '', 1: '', 2: '' });
 const newTaskDescriptions = ref({ 0: '', 1: '', 2: '' });
 const showTaskForm = ref({ 0: false, 1: false, 2: false });
+const editing = ref({});
+const editTitles = ref({});
+const editDescriptions = ref({});
 
 async function loadBoardDetail() {
   try {
@@ -61,6 +64,45 @@ async function addTask(position) {
   newTaskDescriptions.value[position] = '';
   showTaskForm.value[position] = false;
   await loadBoardDetail();
+}
+
+function startEdit(task) {
+  editing.value[task.id] = true;
+  editTitles.value[task.id] = task.title;
+  editDescriptions.value[task.id] = task.description || '';
+}
+
+async function saveEdit(task) {
+  const title = editTitles.value[task.id]?.trim();
+  const description = editDescriptions.value[task.id] ?? null;
+  if (!title) {
+    error.value = 'Task-Titel darf nicht leer sein.';
+    return;
+  }
+
+  try {
+    await updateTask(task.id, { title, description });
+    editing.value[task.id] = false;
+    await loadBoardDetail();
+  } catch (err) {
+    console.error(err);
+    error.value = 'Task konnte nicht gespeichert werden.';
+  }
+}
+
+function cancelEdit(task) {
+  editing.value[task.id] = false;
+}
+
+async function deleteTaskById(id) {
+  if (!confirm('Task wirklich löschen?')) return;
+  try {
+    await deleteTask(id);
+    await loadBoardDetail();
+  } catch (err) {
+    console.error(err);
+    error.value = 'Task konnte nicht gelöscht werden.';
+  }
 }
 
 function formatDate(dateString) {
@@ -125,11 +167,25 @@ onMounted(loadBoardDetail);
                 <h3>{{ getList(column.position).title }}</h3>
                 <ul class="tasks">
                   <li v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card">
-                    <strong>{{ task.title }}</strong>
-                    <div class="task-meta">
-                      <small>Erstellt: {{ formatDate(task.createdAt) }}<span v-if="task.dueDate"> • Fällig: {{ formatDate(task.dueDate) }}</span></small>
+                    <div v-if="editing[task.id]">
+                      <input type="text" v-model="editTitles[task.id]" />
+                      <textarea v-model="editDescriptions[task.id]"></textarea>
+                      <div class="task-edit-actions">
+                        <button @click="saveEdit(task)">Speichern</button>
+                        <button @click="cancelEdit(task)" class="cancel-btn">Abbrechen</button>
+                      </div>
                     </div>
-                    <p v-if="task.description">{{ task.description }}</p>
+                    <div v-else>
+                      <strong>{{ task.title }}</strong>
+                      <div class="task-meta">
+                        <small>Erstellt: {{ formatDate(task.createdAt) }}<span v-if="task.dueDate"> • Fällig: {{ formatDate(task.dueDate) }}</span></small>
+                      </div>
+                      <p v-if="task.description">{{ task.description }}</p>
+                      <div class="task-actions">
+                        <button @click="startEdit(task)">Bearbeiten</button>
+                        <button @click="deleteTaskById(task.id)" class="delete-btn">Löschen</button>
+                      </div>
+                    </div>
                   </li>
                   <li v-if="getTasks(getList(column.position)).length === 0" class="task-card empty">
                     Keine Tasks
@@ -256,6 +312,36 @@ onMounted(loadBoardDetail);
   color: #6c757d;
   font-size: 0.85rem;
   margin-top: 0.25rem;
+}
+.task-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+.task-actions button {
+  padding: 0.35rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.task-actions .delete-btn {
+  background: #dc3545;
+  color: white;
+}
+.task-edit-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+.task-edit-actions button {
+  padding: 0.35rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.task-edit-actions .cancel-btn {
+  background: #6c757d;
+  color: white;
 }
 .task-card.empty {
   color: #6c757d;

@@ -30,3 +30,13 @@ export async function createTaskList(boardId, title, position) {
 
   return response.data;
 }
+
+export async function updateTask(id, data) {
+  const response = await api.put(`/tasks/${id}`, data);
+  return response.data;
+}
+
+export async function deleteTask(id) {
+  const response = await api.delete(`/tasks/${id}`);
+  return response.data;
+}

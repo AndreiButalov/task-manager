@@ -156,4 +156,63 @@ final class TaskController
             'user_id' => $user->getId(),
         ]);
     }
+
+    #[Route('/api/tasks/{id}', name: 'api_tasks_update', methods: ['PUT'])]
+    public function update(
+        int $id,
+        Request $request,
+        TaskRepository $taskRepository,
+        TaskListRepository $taskListRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $task = $taskRepository->find($id);
+
+        if (!$task) {
+            return new JsonResponse(['error' => 'Task not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['position'])) {
+            $task->setPosition((int) $data['position']);
+        }
+
+        if (isset($data['task_list_id'])) {
+            $taskList = $taskListRepository->find($data['task_list_id']);
+            if (!$taskList) {
+                return new JsonResponse(['error' => 'TaskList not found'], 404);
+            }
+            $task->setTaskList($taskList);
+        }
+
+        if (isset($data['title'])) {
+            $task->setTitle($data['title']);
+        }
+
+        if (array_key_exists('description', $data)) {
+            $task->setDescription($data['description']);
+        }
+
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Task updated']);
+    }
+
+    #[Route('/api/tasks/{id}', name: 'api_tasks_delete', methods: ['DELETE'])]
+    public function delete(
+        int $id,
+        TaskRepository $taskRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $task = $taskRepository->find($id);
+
+        if (!$task) {
+            return new JsonResponse(['error' => 'Task not found'], 404);
+        }
+
+        $em->remove($task);
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Task deleted']);
+    }
 }
