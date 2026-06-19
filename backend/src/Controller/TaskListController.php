@@ -4,28 +4,52 @@ namespace App\Controller;
 
 use App\Repository\TaskListRepository;
 use App\Entity\TaskList;
+use App\Entity\User;
 use App\Repository\BoardRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 final class TaskListController
 {
     #[Route('/api/tasklists', name: 'api_tasklists', methods: ['GET'])]
-    public function index(TaskListRepository $taskListRepository): JsonResponse
+    public function index(
+        TaskListRepository $taskListRepository,
+        #[CurrentUser] ?User $currentUser
+    ): JsonResponse
     {
+        if (!$currentUser) {
+            return new JsonResponse([
+                'error' => 'User not authenticated'
+            ], 401);
+        }
+
         $lists = $taskListRepository->findAll();
 
         $data = [];
 
         foreach ($lists as $list) {
-            $data[] = [
-                'id' => $list->getId(),
-                'title' => $list->getTitle(),
-                'position' => $list->getPosition(),
-                'board_id' => $list->getBoard()?->getId(),
-            ];
+            $board = $list->getBoard();
+            
+            if (!$board) {
+                continue;
+            }
+            
+            $isOwner = $board->getOwner()?->getId() === $currentUser->getId();
+            $isMember = $board->getMembers()->exists(
+                fn ($key, $member) => $member->getId() === $currentUser->getId()
+            );
+
+            if ($isOwner || $isMember) {
+                $data[] = [
+                    'id' => $list->getId(),
+                    'title' => $list->getTitle(),
+                    'position' => $list->getPosition(),
+                    'board_id' => $list->getBoard()?->getId(),
+                ];
+            }
         }
 
         return new JsonResponse($data);
