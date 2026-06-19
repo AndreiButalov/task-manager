@@ -43,8 +43,7 @@ async function addTask(position) {
     error.value = 'Task-Titel darf nicht leer sein.';
     return;
   }
-
-  // Wenn keine Liste vorhanden ist, erstelle sie zuerst
+ 
   if (!list) {
     const listTitle = columnTitles[position];
     try {
@@ -62,6 +61,19 @@ async function addTask(position) {
   newTaskDescriptions.value[position] = '';
   showTaskForm.value[position] = false;
   await loadBoardDetail();
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return dateString;
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 function goBack() {
@@ -114,6 +126,9 @@ onMounted(loadBoardDetail);
                 <ul class="tasks">
                   <li v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card">
                     <strong>{{ task.title }}</strong>
+                    <div class="task-meta">
+                      <small>Erstellt: {{ formatDate(task.createdAt) }}<span v-if="task.dueDate"> • Fällig: {{ formatDate(task.dueDate) }}</span></small>
+                    </div>
                     <p v-if="task.description">{{ task.description }}</p>
                   </li>
                   <li v-if="getTasks(getList(column.position)).length === 0" class="task-card empty">
@@ -236,6 +251,11 @@ onMounted(loadBoardDetail);
   border-radius: 10px;
   margin-bottom: 0.75rem;
   background: #ffffff;
+}
+.task-meta {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 .task-card.empty {
   color: #6c757d;

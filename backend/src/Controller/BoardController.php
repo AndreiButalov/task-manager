@@ -272,6 +272,8 @@ final class BoardController
                     'description' => $task->getDescription(),
                     'position' => $task->getPosition(),
                     'task_list_id' => $task->getTaskList()?->getId(),
+                    'createdAt' => $task->getCreatedAt()?->format('Y-m-d H:i:s'),
+                    'dueDate' => $task->getDueDate()?->format('Y-m-d H:i:s'),
                 ];
             }
 
