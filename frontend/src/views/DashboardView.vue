@@ -2,10 +2,10 @@
 import { useRouter } from 'vue-router'
 import { getUser, logout } from '../services/auth'
 import { loadBoards, loadBoard } from '../services/boardService';
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 
 const router = useRouter()
-const user = getUser()
+const user = ref(getUser());
 const boards = ref([]);
 const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 });
 
@@ -33,6 +33,15 @@ async function loadTaskStats() {
   })).length;
 }
 
+const displayName = computed(() => {
+  if (user.value?.firstName || user.value?.lastName) {
+    return `${user.value?.first_ame ?? ""} ${user.value?.lastName ?? ""}`.trim();
+  }
+
+  console.log(user.value?.firstName);
+  
+  return user.value?.email || "Nutzer";
+});
 
 const handleLogout = () => {
   logout()
@@ -47,9 +56,15 @@ onMounted(refreshBoards);
     <header class="dashboard-header">
       <div>
         <h1>Dashboard</h1>
-        <p>Willkommen zurück, {{ user?.email || 'Nutzer' }}.</p>
+        <p>Willkommen zurück, {{ displayName }}.</p>
       </div>
-      <button @click="handleLogout">Abmelden</button>
+      <div class="setting">
+        <router-link class="to_profile" to="/profile">
+          Profil bearbeiten
+        </router-link>
+        <button @click="handleLogout">Abmelden</button>
+      </div>
+
     </header>
 
     <section class="panel">
@@ -133,12 +148,30 @@ onMounted(refreshBoards);
   background: #c82333;
 }
 
+.to_profile {
+  padding: 10px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #dc3545;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
 .panel {
   margin-bottom: 1.75rem;
   padding: 1.5rem;
   border: 1px solid #e0e0e0;
   border-radius: 14px;
   background: #fff;
+}
+
+.setting {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
 }
 
 .cards {

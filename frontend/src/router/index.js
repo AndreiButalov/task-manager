@@ -5,6 +5,7 @@ import RegisterView from '../views/RegisterView.vue'
 import BoardView from '../views/BoardView.vue'
 import BoardSingleView from '../views/BoardSingleView.vue'
 import TaskView from '../views/TaskView.vue'
+import ProfileView from '../views/ProfileView.vue'
 import { isAuthenticated } from '../services/auth'
 
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
   { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },
   { path: '/login', name: 'login', component: LoginView },
   { path: '/register', name: 'register', component: RegisterView },
+  { path: '/profile', name: 'rofile', component: ProfileView },
   { path: '/boards', name: 'boards', component: BoardView, meta: { requiresAuth: true } },
   { path: '/boards/:id', name: 'boardSingle', component: BoardSingleView, meta: { requiresAuth: true } },
   { path: '/task/:id', name: 'task', component: TaskView, meta: { requiresAuth: true } },

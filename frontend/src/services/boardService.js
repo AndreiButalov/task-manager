@@ -66,3 +66,13 @@ export async function loadTaskLists() {
   const response = await api.get('/tasklists');
   return response.data;
 }
+
+export async function loadProfile() {
+  const { data } = await api.get("/me");
+
+  return {
+    firstName: data.firstName || "",
+    lastName: data.lastName || "",
+    email: data.email || "",
+  };
+}
