@@ -12,7 +12,6 @@ const boardId = Number(route.params.id);
 const columnTitles = ['Todo', 'In Progress', 'Done'];
 const newTaskTitles = ref({ 0: '', 1: '', 2: '' });
 const newTaskDescriptions = ref({ 0: '', 1: '', 2: '' });
-const newListNames = ref({ 0: '', 1: '', 2: '' });
 const showTaskForm = ref({ 0: false, 1: false, 2: false });
 
 async function loadBoardDetail() {
@@ -36,32 +35,32 @@ function getTasks(list) {
 }
 
 async function addTask(position) {
-  const list = getList(position);
+  let list = getList(position);
   const title = newTaskTitles.value[position]?.trim();
   const description = newTaskDescriptions.value[position]?.trim();
-
-  if (!list) {
-    error.value = 'Es gibt keine Taskliste für diese Spalte.';
-    return;
-  }
 
   if (!title) {
     error.value = 'Task-Titel darf nicht leer sein.';
     return;
   }
 
+  // Wenn keine Liste vorhanden ist, erstelle sie zuerst
+  if (!list) {
+    const listTitle = columnTitles[position];
+    try {
+      await createTaskList(boardId, listTitle, position);
+      await loadBoardDetail();
+      list = getList(position);
+    } catch (error) {
+      error.value = 'TaskListe konnte nicht erstellt werden.';
+      return;
+    }
+  }
+
   await createTask(list.id, title, description, getTasks(list).length);
   newTaskTitles.value[position] = '';
   newTaskDescriptions.value[position] = '';
   showTaskForm.value[position] = false;
-  await loadBoardDetail();
-}
-
-async function addTaskList(position) {
-  const title = newListNames.value[position]?.trim() || columnTitles[position];
-
-  await createTaskList(boardId, title, position);
-  newListNames.value[position] = '';
   await loadBoardDetail();
 }
 
@@ -92,7 +91,22 @@ onMounted(loadBoardDetail);
           <div v-for="column in columns" :key="column.position" class="kanban-column">
             <header class="column-header">
               <h2>{{ column.title }}</h2>
+              <button class="add-list-btn" @click="showTaskForm[column.position] = !showTaskForm[column.position]">+</button>
             </header>
+
+            <div v-if="showTaskForm[column.position]" class="task-form-quick">
+              <input
+                type="text"
+                v-model="newTaskTitles[column.position]"
+                placeholder="Neue Aufgabe"
+              />
+              <textarea
+                v-model="newTaskDescriptions[column.position]"
+                placeholder="Beschreibung (optional)"
+              />
+              <button @click="addTask(column.position)">Task hinzufügen</button>
+              <button @click="showTaskForm[column.position] = false" class="cancel-btn">Abbrechen</button>
+            </div>
 
             <div v-if="getList(column.position)">
               <div class="tasklist-card">
@@ -106,36 +120,7 @@ onMounted(loadBoardDetail);
                     Keine Tasks
                   </li>
                 </ul>
-
-                <div class="task-form">
-                  <button class="toggle-task-form" @click="showTaskForm[column.position] = !showTaskForm[column.position]">
-                    {{ showTaskForm[column.position] ? 'Formular ausblenden' : 'Neue Aufgabe' }}
-                  </button>
-
-                  <div v-if="showTaskForm[column.position]" class="task-form-fields">
-                    <input
-                      type="text"
-                      v-model="newTaskTitles[column.position]"
-                      placeholder="Neue Aufgabe"
-                    />
-                    <textarea
-                      v-model="newTaskDescriptions[column.position]"
-                      placeholder="Beschreibung (optional)"
-                    />
-                    <button @click="addTask(column.position)">Task hinzufügen</button>
-                  </div>
-                </div>
               </div>
-            </div>
-
-            <div v-else class="tasklist-empty">
-              <p>Keine Liste für {{ column.title }} vorhanden.</p>
-              <input
-                type="text"
-                v-model="newListNames[column.position]"
-                placeholder="Liste erstellen oder Titel eingeben"
-              />
-              <button @click="addTaskList(column.position)">Liste erstellen</button>
             </div>
           </div>
         </div>
@@ -179,6 +164,60 @@ onMounted(loadBoardDetail);
 }
 .column-header {
   margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.column-header h2 {
+  margin: 0;
+}
+.add-list-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #0d6efd;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-list-btn:hover {
+  background: #0b5ed7;
+}
+.task-form-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: 10px;
+}
+.task-form-quick input,
+.task-form-quick textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+}
+.task-form-quick textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.task-form-quick button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #198754;
+  color: white;
+  cursor: pointer;
+}
+.task-form-quick button.cancel-btn {
+  background: #6c757d;
 }
 .tasklist-card {
   background: white;
@@ -225,25 +264,6 @@ onMounted(loadBoardDetail);
   border: none;
   border-radius: 10px;
   background: #0d6efd;
-  color: white;
-  cursor: pointer;
-}
-.tasklist-empty {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.tasklist-empty input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 10px;
-}
-.tasklist-empty button {
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 10px;
-  background: #198754;
   color: white;
   cursor: pointer;
 }
