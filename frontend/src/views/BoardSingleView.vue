@@ -16,6 +16,7 @@ const showTaskForm = ref({ 0: false, 1: false, 2: false });
 const editing = ref({});
 const editTitles = ref({});
 const editDescriptions = ref({});
+const currentElement = ref('')
 
 async function loadBoardDetail() {
   try {
@@ -46,7 +47,7 @@ async function addTask(position) {
     error.value = 'Task-Titel darf nicht leer sein.';
     return;
   }
- 
+
   if (!list) {
     const listTitle = columnTitles[position];
     try {
@@ -124,6 +125,35 @@ function goBack() {
 
 const columns = computed(() => columnTitles.map((title, index) => ({ title, position: index })));
 
+
+function startDragging(taskId) {
+  currentElement.value = taskId;
+}
+
+async function onDrop(targetPosition) {
+  const taskId = currentElement.value;
+  if (!taskId) return;
+
+  const targetList = getList(targetPosition);
+  if (!targetList) return;
+
+  const newPosition = getTasks(targetList).length;
+
+  try {
+    await updateTask(taskId, {
+      task_list_id: targetList.id,
+      position: newPosition
+    });
+
+    currentElement.value = null;
+    await loadBoardDetail();
+
+  } catch (err) {
+    console.error(err);
+    error.value = "Task konnte nicht verschoben werden.";
+  }
+}
+
 onMounted(loadBoardDetail);
 </script>
 
@@ -142,22 +172,17 @@ onMounted(loadBoardDetail);
 
       <section class="board-tasklists">
         <div class="kanban-grid">
-          <div v-for="column in columns" :key="column.position" class="kanban-column">
+          <div v-for="column in columns" :key="column.position" class="kanban-column" @dragover.prevent
+            @drop="onDrop(column.position)">
             <header class="column-header">
               <h2>{{ column.title }}</h2>
-              <button class="add-list-btn" @click="showTaskForm[column.position] = !showTaskForm[column.position]">+</button>
+              <button class="add-list-btn"
+                @click="showTaskForm[column.position] = !showTaskForm[column.position]">+</button>
             </header>
 
             <div v-if="showTaskForm[column.position]" class="task-form-quick">
-              <input
-                type="text"
-                v-model="newTaskTitles[column.position]"
-                placeholder="Neue Aufgabe"
-              />
-              <textarea
-                v-model="newTaskDescriptions[column.position]"
-                placeholder="Beschreibung (optional)"
-              />
+              <input type="text" v-model="newTaskTitles[column.position]" placeholder="Neue Aufgabe" />
+              <textarea v-model="newTaskDescriptions[column.position]" placeholder="Beschreibung (optional)" />
               <button @click="addTask(column.position)">Task hinzufügen</button>
               <button @click="showTaskForm[column.position] = false" class="cancel-btn">Abbrechen</button>
             </div>
@@ -166,27 +191,42 @@ onMounted(loadBoardDetail);
               <div class="tasklist-card">
                 <h3>{{ getList(column.position).title }}</h3>
                 <ul class="tasks">
-                  <li v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card">
+                  <li v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card"
+                    draggable="true" @dragstart="startDragging(task.id)">
                     <div v-if="editing[task.id]">
                       <input type="text" v-model="editTitles[task.id]" />
                       <textarea v-model="editDescriptions[task.id]"></textarea>
+
                       <div class="task-edit-actions">
                         <button @click="saveEdit(task)">Speichern</button>
-                        <button @click="cancelEdit(task)" class="cancel-btn">Abbrechen</button>
+                        <button @click="cancelEdit(task)" class="cancel-btn">
+                          Abbrechen
+                        </button>
                       </div>
                     </div>
                     <div v-else>
                       <strong>{{ task.title }}</strong>
+
                       <div class="task-meta">
-                        <small>Erstellt: {{ formatDate(task.createdAt) }}<span v-if="task.dueDate"> • Fällig: {{ formatDate(task.dueDate) }}</span></small>
+                        <small>
+                          Erstellt: {{ formatDate(task.createdAt) }}
+                          <span v-if="task.dueDate">
+                            • Fällig: {{ formatDate(task.dueDate) }}
+                          </span>
+                        </small>
                       </div>
+
                       <p v-if="task.description">{{ task.description }}</p>
+
                       <div class="task-actions">
                         <button @click="startEdit(task)">Bearbeiten</button>
-                        <button @click="deleteTaskById(task.id)" class="delete-btn">Löschen</button>
+                        <button @click="deleteTaskById(task.id)" class="delete-btn">
+                          Löschen
+                        </button>
                       </div>
                     </div>
                   </li>
+
                   <li v-if="getTasks(getList(column.position)).length === 0" class="task-card empty">
                     Keine Tasks
                   </li>
@@ -206,6 +246,7 @@ onMounted(loadBoardDetail);
   margin: 2rem auto;
   padding: 1rem;
 }
+
 .back-button {
   margin-bottom: 1rem;
   padding: 0.6rem 1rem;
@@ -215,17 +256,21 @@ onMounted(loadBoardDetail);
   color: white;
   cursor: pointer;
 }
+
 .board-header {
   margin-bottom: 1.5rem;
 }
+
 .board-header h1 {
   margin: 0;
 }
+
 .kanban-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
+
 .kanban-column {
   background: #f8f9fa;
   border: 1px solid #dee2e6;
@@ -233,15 +278,18 @@ onMounted(loadBoardDetail);
   padding: 1rem;
   min-height: 400px;
 }
+
 .column-header {
   margin-bottom: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .column-header h2 {
   margin: 0;
 }
+
 .add-list-btn {
   width: 32px;
   height: 32px;
@@ -255,9 +303,11 @@ onMounted(loadBoardDetail);
   align-items: center;
   justify-content: center;
 }
+
 .add-list-btn:hover {
   background: #0b5ed7;
 }
+
 .task-form-quick {
   display: flex;
   flex-direction: column;
@@ -268,6 +318,7 @@ onMounted(loadBoardDetail);
   border: 1px solid #ced4da;
   border-radius: 10px;
 }
+
 .task-form-quick input,
 .task-form-quick textarea {
   width: 100%;
@@ -275,10 +326,12 @@ onMounted(loadBoardDetail);
   border: 1px solid #ced4da;
   border-radius: 6px;
 }
+
 .task-form-quick textarea {
   min-height: 80px;
   resize: vertical;
 }
+
 .task-form-quick button {
   padding: 0.5rem 1rem;
   border: none;
@@ -287,20 +340,24 @@ onMounted(loadBoardDetail);
   color: white;
   cursor: pointer;
 }
+
 .task-form-quick button.cancel-btn {
   background: #6c757d;
 }
+
 .tasklist-card {
   background: white;
   border: 1px solid #ced4da;
   border-radius: 12px;
   padding: 1rem;
 }
+
 .tasks {
   list-style: none;
   padding: 0;
   margin: 0 0 1rem 0;
 }
+
 .task-card {
   padding: 0.75rem;
   border: 1px solid #ced4da;
@@ -308,51 +365,61 @@ onMounted(loadBoardDetail);
   margin-bottom: 0.75rem;
   background: #ffffff;
 }
+
 .task-meta {
   color: #6c757d;
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }
+
 .task-actions {
   margin-top: 0.5rem;
   display: flex;
   gap: 0.5rem;
 }
+
 .task-actions button {
   padding: 0.35rem 0.6rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
+
 .task-actions .delete-btn {
   background: #dc3545;
   color: white;
 }
+
 .task-edit-actions {
   margin-top: 0.5rem;
   display: flex;
   gap: 0.5rem;
 }
+
 .task-edit-actions button {
   padding: 0.35rem 0.6rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
+
 .task-edit-actions .cancel-btn {
   background: #6c757d;
   color: white;
 }
+
 .task-card.empty {
   color: #6c757d;
   text-align: center;
   border-style: dashed;
 }
+
 .task-form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
+
 .task-form input,
 .task-form textarea {
   width: 100%;
@@ -360,10 +427,12 @@ onMounted(loadBoardDetail);
   border: 1px solid #ced4da;
   border-radius: 10px;
 }
+
 .task-form textarea {
   min-height: 80px;
   resize: vertical;
 }
+
 .task-form button {
   align-self: flex-start;
   padding: 0.75rem 1rem;
@@ -373,6 +442,7 @@ onMounted(loadBoardDetail);
   color: white;
   cursor: pointer;
 }
+
 .error {
   color: #c82333;
 }
