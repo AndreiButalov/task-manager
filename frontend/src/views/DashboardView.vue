@@ -1,15 +1,36 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { getUser, logout } from '../services/auth'
-import { loadBoards } from '../services/boardService';
+import { loadBoards, loadBoard } from '../services/boardService';
 import { ref, onMounted } from "vue";
 
 const router = useRouter()
 const user = getUser()
 const boards = ref([]);
+const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 });
 
 async function refreshBoards() {
   boards.value = await loadBoards();
+  await loadTaskStats();
+}
+
+async function loadTaskStats() {
+  const loadedBoards = await Promise.all(boards.value.map(board => loadBoard(board.id)));
+  const allTasks = loadedBoards.flatMap(board => board.taskLists?.flatMap(list => list.tasks || []) || []);
+
+  stats.value.total = allTasks.length;
+  stats.value.todo = allTasks.filter(task => task.task_list_id && loadedBoards.some(board => {
+    const list = board.taskLists?.find(l => l.id === task.task_list_id);
+    return list?.title?.toLowerCase() === 'todo';
+  })).length;
+  stats.value.inProgress = allTasks.filter(task => task.task_list_id && loadedBoards.some(board => {
+    const list = board.taskLists?.find(l => l.id === task.task_list_id);
+    return list?.title?.toLowerCase() === 'in progress';
+  })).length;
+  stats.value.done = allTasks.filter(task => task.task_list_id && loadedBoards.some(board => {
+    const list = board.taskLists?.find(l => l.id === task.task_list_id);
+    return list?.title?.toLowerCase() === 'done';
+  })).length;
 }
 
 
@@ -52,13 +73,26 @@ onMounted(refreshBoards);
 
     </section>
 
-    <section class="panel">
-      <h2>Was du als nächstes tun kannst</h2>
-      <ul>
-        <li>Erstelle neue Boards und verwalte deine Aufgaben.</li>
-        <li>Lege Tasklisten an, um Arbeit zu strukturieren.</li>
-        <li>Öffne ein bestehendes Board, um direkt loszulegen.</li>
-      </ul>
+    <section class="panel stats-panel">
+      <h2>Deine Aufgaben-Übersicht</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Gesamt</span>
+          <strong>{{ stats.total }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Todo</span>
+          <strong>{{ stats.todo }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">In Progress</span>
+          <strong>{{ stats.inProgress }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Done</span>
+          <strong>{{ stats.done }}</strong>
+        </div>
+      </div>
     </section>
 
   </div>
@@ -113,6 +147,27 @@ onMounted(refreshBoards);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.stat-card {
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  background: #f8f9fa;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
 }
 
 .card {

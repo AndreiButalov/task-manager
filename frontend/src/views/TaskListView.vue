@@ -1,12 +1,11 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import api from "../services/api";
+import { loadTaskLists } from "../services/boardService";
 
 const taskLists = ref([]);
 
 async function loadTaskList() {
-  const response = await api.get("/tasklists");
-  taskLists.value = response.data;
+  taskLists.value = await loadTaskLists();
 }
 
 onMounted(loadTaskList);

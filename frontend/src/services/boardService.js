@@ -40,3 +40,9 @@ export async function deleteTask(id) {
   const response = await api.delete(`/tasks/${id}`);
   return response.data;
 }
+
+
+export async function loadTaskLists() {
+  const response = await api.get('/tasklists');
+  return response.data;
+}
