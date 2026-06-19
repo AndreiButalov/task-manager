@@ -1,16 +1,19 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../services/api";
-import { loadBoards } from '../services/boardService';
+import { loadBoards, loadBoardMembers, loadAvailableMembers, addBoardMember, removeBoardMember } from '../services/boardService';
 
 const boards = ref([]);
 const newTitle = ref("");
 const editingId = ref(null);
 const editTitle = ref("");
 const error = ref("");
+const memberSelection = ref({});
+const availableMembers = ref({});
 
 async function refreshBoards() {
   boards.value = await loadBoards();
+  await Promise.all(boards.value.map((board) => loadMembers(board)));
 }
 
 async function createBoard() {
@@ -37,12 +40,23 @@ async function deleteBoard(id) {
 }
 
 async function loadMembers(board) {
-  const response = await api.get(`/boards/${board.id}/members`);
-  board.members = response.data;
+  board.members = await loadBoardMembers(board.id);
+  availableMembers.value[board.id] = await loadAvailableMembers(board.id);
+  memberSelection.value[board.id] = availableMembers.value[board.id]?.[0]?.id || null;
 }
 
-function hideMembers(board) {
-  delete board.members;
+async function addMember(board) {
+  const userId = memberSelection.value[board.id];
+  if (!userId) return;
+
+  await addBoardMember(board.id, userId);
+  await loadMembers(board);
+}
+
+async function removeMember(board, userId) {
+  if (!confirm("Mitglied wirklich entfernen?")) return;
+  await removeBoardMember(board.id, userId);
+  await loadMembers(board);
 }
 
 function startEdit(board) {
@@ -92,14 +106,34 @@ onMounted(refreshBoards);
 
           <button @click="startEdit(board)">Edit</button>
           <button @click="deleteBoard(board.id)">Delete</button>
-          <button @click="loadMembers(board)">Mitglieder laden</button>
-          <button v-if="board.members" @click="hideMembers(board)">Mitglieder ausblenden</button>
 
-          <ul v-if="board.members">
-            <li v-for="member in board.members" :key="member.id">
-              {{ member.email }}
-            </li>
-          </ul>
+          <div class="members-section">
+            <p><strong>Mitglieder:</strong></p>
+            <ul>
+              <li v-for="member in board.members" :key="member.id">
+                {{ member.email }}
+                <button
+                  v-if="member.id !== board.owner?.id"
+                  @click="removeMember(board, member.id)"
+                  class="small-button delete-btn"
+                >Entfernen</button>
+              </li>
+            </ul>
+
+            <div v-if="availableMembers[board.id]?.length" class="member-add">
+              <select v-model="memberSelection[board.id]">
+                <option
+                  v-for="member in availableMembers[board.id]"
+                  :key="member.id"
+                  :value="member.id"
+                >
+                  {{ member.email }}
+                </option>
+              </select>
+              <button @click="addMember(board)" class="small-button">Mitglied hinzufügen</button>
+            </div>
+            <p v-else class="no-more-members">Keine weiteren Nutzer verfügbar.</p>
+          </div>
         </div>
 
       </li>

@@ -31,6 +31,26 @@ export async function createTaskList(boardId, title, position) {
   return response.data;
 }
 
+export async function loadBoardMembers(boardId) {
+  const response = await api.get(`/boards/${boardId}/members`);
+  return response.data;
+}
+
+export async function loadAvailableMembers(boardId) {
+  const response = await api.get(`/boards/${boardId}/available-members`);
+  return response.data;
+}
+
+export async function addBoardMember(boardId, userId) {
+  const response = await api.post(`/boards/${boardId}/members`, { user_id: userId });
+  return response.data;
+}
+
+export async function removeBoardMember(boardId, userId) {
+  const response = await api.delete(`/boards/${boardId}/members/${userId}`);
+  return response.data;
+}
+
 export async function updateTask(id, data) {
   const response = await api.put(`/tasks/${id}`, data);
   return response.data;
