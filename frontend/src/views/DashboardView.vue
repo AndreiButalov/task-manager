@@ -55,8 +55,7 @@ onMounted(refreshBoards);
     <section class="panel">
       <h2>Schnellzugriff</h2>
       <div class="cards">
-        <router-link class="card" to="/boards">Boards</router-link>
-        <router-link class="card" to="/tasklists">Tasklisten</router-link>
+        <router-link class="card" to="/boards">To Boards</router-link>
       </div>
     </section>
 
