@@ -21,21 +21,18 @@ const availableMembers = ref([])
 const memberSelection = ref(null)
 const error = ref("")
 
-// 🔹 LOAD BOARD
 async function loadBoard() {
   const res = await api.get(`/boards/${boardId}`)
   board.value = res.data
   title.value = board.value.title
 }
 
-// 🔹 LOAD MEMBERS
 async function loadMembers() {
   members.value = await loadBoardMembers(boardId)
   availableMembers.value = await loadAvailableMembers(boardId)
   memberSelection.value = availableMembers.value?.[0]?.id || null
 }
 
-// 🔹 SAVE TITLE
 async function saveTitle() {
   if (!title.value.trim()) return
 
@@ -46,7 +43,6 @@ async function saveTitle() {
   error.value = "Gespeichert!"
 }
 
-// 🔹 DELETE BOARD
 async function deleteBoard() {
   if (!confirm("Board wirklich löschen?")) return
 
@@ -54,7 +50,6 @@ async function deleteBoard() {
   router.push("/boards")
 }
 
-// 🔹 ADD MEMBER
 async function addMember() {
   if (!memberSelection.value) return
 
@@ -62,7 +57,6 @@ async function addMember() {
   await loadMembers()
 }
 
-// 🔹 REMOVE MEMBER
 async function removeMember(userId) {
   if (!confirm("Mitglied entfernen?")) return
 
@@ -74,6 +68,7 @@ onMounted(async () => {
   await loadBoard()
   await loadMembers()
 })
+
 </script>
 
 <template>
@@ -81,7 +76,6 @@ onMounted(async () => {
 
     <h1>Board bearbeiten</h1>
 
-    <!-- TITLE -->
     <div class="section">
       <label>Titel</label>
       <input v-model="title" />
@@ -92,7 +86,6 @@ onMounted(async () => {
 
     <hr />
 
-    <!-- MEMBERS -->
     <div class="section">
       <h2>Mitglieder</h2>
 
@@ -126,7 +119,6 @@ onMounted(async () => {
 
     <hr />
 
-    <!-- DANGER ZONE -->
     <div class="section danger">
       <button @click="deleteBoard">
         Board löschen

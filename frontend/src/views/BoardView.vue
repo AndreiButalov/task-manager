@@ -11,9 +11,7 @@ const error = ref("");
 const memberSelection = ref({});
 const availableMembers = ref({});
 const router = useRouter()
-// const firstName = ref("")
-// const lastName = ref("")
-// const email = ref("")
+
 
 async function refreshBoards() {
   boards.value = await loadBoards();
