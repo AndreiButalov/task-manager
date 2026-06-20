@@ -110,13 +110,14 @@ onMounted(async () => {
           Abmelden
         </button>
       </div>
-      <div v-if="showProfileModal" class="window-to_profile" @click.self="showProfileModal = false">
+      <div  class="window-to_profile" @click.self="showProfileModal = false">
         <div class="edit-profile-content">
           <button class="close" @click="showProfileModal = false">✕</button>
           <ProfileView />
         </div>
       </div>
     </header>
+    <!-- v-if="showProfileModal" -->
 
     <section class="panel">
       <h2>Schnellzugriff</h2>
@@ -190,7 +191,7 @@ onMounted(async () => {
   font-size: 2rem;
 }
 
-.dashboard-header button {
+.setting button {
   padding: 0.75rem 1.2rem;
   border: none;
   border-radius: 8px;
@@ -200,7 +201,7 @@ onMounted(async () => {
   cursor: pointer;
 }
 
-.dashboard-header button:hover {
+.setting button:hover {
   background: #c82333;
 }
 
@@ -276,21 +277,44 @@ onMounted(async () => {
 
 .window-to_profile {
   position: absolute;
-  right: 0px;
-  top: 72px;
+  right: 42px;
+  top: 90px;
   width: 300px;
   height: 300px;
   border-radius: 20px;
   border: #E0E0E0 solid 1px;
   background-color: #F8F9FA;
+  padding: 10px;
 }
 
 .close {
-  background-color: black !important ; 
-  float: right;
-  border: none;
+  position: absolute;
+  right: -5px;
+  top: -26px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #746b6b;
+  border: #E0E0E0 solid 1px;
   background: transparent;
-  font-size: 20px;
+  font-size: 18px;
   cursor: pointer;
+  border-radius: 50%;
+}
+
+.close:hover {
+  color:#c82333;
+  border: #c82333 solid 1px;
+  background: #eca6ad;
+}
+
+.edit-profile-content {
+  position: relative;
+  
 }
 </style>
