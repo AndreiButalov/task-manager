@@ -22,6 +22,7 @@ const routes = [
   { path: '/boards', name: 'boards', component: BoardView, meta: { requiresAuth: true } },
   { path: '/boards/:id', name: 'boardSingle', component: BoardSingleView, meta: { requiresAuth: true } },
   { path: '/task/:id', name: 'task', component: TaskView, meta: { requiresAuth: true } },
+  { path: "/boards/:id/edit", name: "boardEdit", component: () => import("@/views/BoardEditView.vue") }
 ]
 
 const router = createRouter({

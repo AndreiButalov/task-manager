@@ -83,7 +83,7 @@ h1 {
     font-weight: 700;
 }
 
-.input {  
+.input{  
   padding: 7px;
   border-radius: 12px;
   border: 1.5px solid lightgrey;
@@ -120,6 +120,7 @@ h1 {
     font-size: 14px;
     font-weight: 700;
     border-radius: 20px;
+    cursor: pointer;
 }
 
 .profile_content_footer button:hover {
