@@ -122,7 +122,7 @@ onMounted(async () => {
 
     <hr />
 
-    <div class="section danger">
+    <div class="section footer">
       <button class="button_" @click="deleteBoard">
         Board löschen
       </button>
@@ -206,7 +206,9 @@ button {
   color: white;
 }
 
-.member {
+.footer {
   display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
