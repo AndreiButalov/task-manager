@@ -110,14 +110,13 @@ onMounted(async () => {
           Abmelden
         </button>
       </div>
-      <div  class="window-to_profile" @click.self="showProfileModal = false">
+      <div v-if="showProfileModal" class="window-to_profile" @click.self="showProfileModal = false">
         <div class="edit-profile-content">
           <button class="close" @click="showProfileModal = false">✕</button>
           <ProfileView />
         </div>
       </div>
-    </header>
-    <!-- v-if="showProfileModal" -->
+    </header>    
 
     <section class="panel">
       <h2>Schnellzugriff</h2>
