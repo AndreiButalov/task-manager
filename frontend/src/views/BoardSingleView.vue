@@ -1,10 +1,9 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { loadBoard, createTask, createTaskList, updateTask, deleteTask } from '../services/boardService';
 
 const route = useRoute();
-const router = useRouter();
 const board = ref(null);
 const error = ref('');
 const loading = ref(true);
@@ -119,9 +118,6 @@ function formatDate(dateString) {
   });
 }
 
-function goBack() {
-  router.push({ name: 'boards' });
-}
 
 const columns = computed(() => columnTitles.map((title, index) => ({ title, position: index })));
 
@@ -159,14 +155,12 @@ onMounted(loadBoardDetail);
 
 <template>
   <div class="board-single">
-    <button class="back-button" @click="goBack">← Zurück zu Boards</button>
 
     <div v-if="loading">Lädt Board...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else>
       <header class="board-header">
         <h1>{{ board.title }}</h1>
-        <p>Board-ID: {{ board.id }}</p>
         <p>Owner: {{ board.owner.email }}</p>
       </header>
 
@@ -219,8 +213,8 @@ onMounted(loadBoardDetail);
                       <p v-if="task.description">{{ task.description }}</p>
 
                       <div class="task-actions">
-                        <button @click="startEdit(task)">Bearbeiten</button>
-                        <button @click="deleteTaskById(task.id)" class="delete-btn">
+                        <button class="nav_button" @click="startEdit(task)">Bearbeiten</button>
+                        <button class="nav_button" @click="deleteTaskById(task.id)">
                           Löschen
                         </button>
                       </div>
@@ -372,23 +366,36 @@ onMounted(loadBoardDetail);
   margin-top: 0.25rem;
 }
 
-.task-actions {
-  margin-top: 0.5rem;
-  display: flex;
-  gap: 0.5rem;
-}
-
-.task-actions button {
-  padding: 0.35rem 0.6rem;
-  border: none;
-  border-radius: 6px;
+.task-card p {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-height: 100px;
+  overflow-y: auto;
   cursor: pointer;
 }
 
-.task-actions .delete-btn {
-  background: #dc3545;
-  color: white;
+.task-actions {
+  margin-top: 0.5rem;
+  display: flex;
 }
+
+.task-actions button {
+  color: black;
+  border: #E0E0E0 solid 1px;
+  background: transparent;
+  padding: 5px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.task-actions button:hover {
+  color: #c82333;
+  border: #c82333 solid 1px;
+  background: #eca6ad;
+}
+
 
 .task-edit-actions {
   margin-top: 0.5rem;

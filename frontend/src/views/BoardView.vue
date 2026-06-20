@@ -149,7 +149,6 @@ select:focus {
   color: #c82333;
   border: #c82333 solid 1px;
   background: #eca6ad;
-
 }
 
 .board_content {

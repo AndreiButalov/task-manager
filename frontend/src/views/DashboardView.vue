@@ -2,12 +2,10 @@
 import { loadBoards, loadBoard } from '../services/boardService'
 import { loadProfile } from '../services/boardService'
 import { ref, onMounted, computed } from "vue"
-// import ProfileView from '@/views/ProfileView.vue'
 
 const firstName = ref("")
 const lastName = ref("")
 const email = ref("")
-// const showProfileModal = ref(false)
 const boards = ref([])
 
 const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 })
@@ -90,19 +88,7 @@ onMounted(async () => {
         <p>
           Willkommen zurück, {{ displayName }}.
         </p>
-      </div>
-      <!-- <div class="setting">
-        <button class="to_profile" @click="showProfileModal = true">
-          Profil bearbeiten
-        </button>
-        
-      </div>
-      <div v-if="showProfileModal" class="window-to_profile" @click.self="showProfileModal = false">
-        <div class="edit-profile-content">
-          <button class="close" @click="showProfileModal = false">✕</button>
-          <ProfileView />
-        </div>
-      </div> -->
+      </div>     
     </header>    
 
     <section class="panel">
@@ -191,30 +177,12 @@ onMounted(async () => {
   background: #c82333;
 }
 
-.to_profile {
-  padding: 10px 10px;
-  border: none;
-  border-radius: 8px;
-  background: #dc3545;
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: none;
-}
-
 .panel {
   margin-bottom: 1.75rem;
   padding: 1.5rem;
   border: 1px solid #e0e0e0;
   border-radius: 14px;
   background: #fff;
-}
-
-.setting {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
 }
 
 .cards {
@@ -259,45 +227,5 @@ onMounted(async () => {
 
 .card:hover {
   background: #e9ecef;
-}
-
-.window-to_profile {
-  position: absolute;
-  right: 42px;
-  top: 90px;
-  width: 300px;
-  height: 300px;
-  border-radius: 20px;
-  border: #E0E0E0 solid 1px;
-  background-color: #F8F9FA;
-  padding: 10px;
-}
-
-
-.close {
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #746b6b;
-  border: #E0E0E0 solid 1px;
-  background: transparent;
-  font-size: 18px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-
-.close:hover {
-  color:#c82333;
-  border: #c82333 solid 1px;
-  background: #eca6ad;
-}
-
-.edit-profile-content {
-  position: relative;  
 }
 </style>
