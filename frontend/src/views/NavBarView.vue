@@ -63,13 +63,19 @@ h1 {
 .card {
     text-decoration: none;
     color: white;
-    cursor: pointer;
+    cursor: pointer;    
 }
 
 .links a {
     margin: 0 10px;
     color: white;
     text-decoration: none;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.links a:hover {
+    color: #c82333;
 }
 
 .setting button {

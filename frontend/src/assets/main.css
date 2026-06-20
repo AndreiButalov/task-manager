@@ -8,7 +8,7 @@ body {
 #app {
   max-width: 960px;
   margin: 0 auto;
-  padding: 2rem;
+  padding:0 2rem 2rem 2rem;
 }
 
 .app-shell {
