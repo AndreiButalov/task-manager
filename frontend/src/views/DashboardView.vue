@@ -4,21 +4,18 @@ import { logout } from '../services/auth'
 import { loadBoards, loadBoard } from '../services/boardService'
 import { loadProfile } from '../services/boardService'
 import { ref, onMounted, computed } from "vue"
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = useRouter()
 
-// PROFILE STATE
 const firstName = ref("")
 const lastName = ref("")
 const email = ref("")
-
-// BOARDS STATE
+const showProfileModal = ref(false)
 const boards = ref([])
 
-// STATS STATE
 const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 })
 
-// DISPLAY NAME (WICHTIG)
 const displayName = computed(() => {
   if (firstName.value || lastName.value) {
     return `${firstName.value ?? ""} ${lastName.value ?? ""}`.trim()
@@ -26,14 +23,12 @@ const displayName = computed(() => {
   return email.value || "Nutzer"
 })
 
-/* ---------------- BOARDS ---------------- */
 
 async function refreshBoards() {
   boards.value = await loadBoards()
   await loadTaskStats()
 }
 
-/* ---------------- TASK STATS ---------------- */
 
 async function loadTaskStats() {
   const loadedBoards = await Promise.all(
@@ -74,7 +69,6 @@ async function loadTaskStats() {
   ).length
 }
 
-/* ---------------- PROFILE ---------------- */
 
 async function load() {
   const profile = await loadProfile()
@@ -84,14 +78,12 @@ async function load() {
   email.value = profile.email
 }
 
-/* ---------------- LOGOUT ---------------- */
 
 const handleLogout = () => {
   logout()
   router.push({ name: 'login' })
 }
 
-/* ---------------- INIT ---------------- */
 
 onMounted(async () => {
   await Promise.all([
@@ -111,12 +103,18 @@ onMounted(async () => {
         </p>
       </div>
       <div class="setting">
-        <router-link class="to_profile" to="/profile">
+        <button class="to_profile" @click="showProfileModal = true">
           Profil bearbeiten
-        </router-link>
+        </button>
         <button @click="handleLogout">
           Abmelden
         </button>
+      </div>
+      <div v-if="showProfileModal" class="window-to_profile" @click.self="showProfileModal = false">
+        <div class="edit-profile-content">
+          <button class="close" @click="showProfileModal = false">✕</button>
+          <ProfileView />
+        </div>
       </div>
     </header>
 
@@ -137,7 +135,7 @@ onMounted(async () => {
         </li>
       </ul>
     </section>
-    
+
     <section class="panel stats-panel">
       <h2>Deine Aufgaben-Übersicht</h2>
 
@@ -179,6 +177,7 @@ onMounted(async () => {
 }
 
 .dashboard-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -273,5 +272,25 @@ onMounted(async () => {
 
 .card:hover {
   background: #e9ecef;
+}
+
+.window-to_profile {
+  position: absolute;
+  right: 0px;
+  top: 72px;
+  width: 300px;
+  height: 300px;
+  border-radius: 20px;
+  border: #E0E0E0 solid 1px;
+  background-color: #F8F9FA;
+}
+
+.close {
+  background-color: black !important ; 
+  float: right;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
 }
 </style>
