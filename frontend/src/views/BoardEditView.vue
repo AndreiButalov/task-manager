@@ -76,10 +76,12 @@ onMounted(async () => {
 
     <h1>Board bearbeiten</h1>
 
-    <div class="section">
-      <label>Titel</label>
-      <input v-model="title" />
-      <button @click="saveTitle">Speichern</button>
+    <div class="title_edit section">
+      <p>Board Name:</p>
+      <div>
+        <input v-model="title" />
+        <button class="button_" @click="saveTitle">Speichern</button>
+      </div>
     </div>
 
     <p v-if="error">{{ error }}</p>
@@ -93,6 +95,7 @@ onMounted(async () => {
         {{ member.email }}
 
         <button
+          class="button_"
           v-if="member.id !== board.owner?.id"
           @click="removeMember(member.id)"
         >
@@ -111,7 +114,7 @@ onMounted(async () => {
           </option>
         </select>
 
-        <button @click="addMember">
+        <button class="button_" @click="addMember">
           Mitglied hinzufügen
         </button>
       </div>
@@ -120,7 +123,7 @@ onMounted(async () => {
     <hr />
 
     <div class="section danger">
-      <button @click="deleteBoard">
+      <button class="button_" @click="deleteBoard">
         Board löschen
       </button>
     </div>
@@ -136,6 +139,46 @@ onMounted(async () => {
   margin: 2rem auto;
   padding: 1rem;
 }
+
+.title_edit {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;  
+}
+
+.title_edit p {
+  font-weight: 700;
+}
+
+.title_edit div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-right: 30px;
+}
+
+.title_edit input {
+  width: 250px;
+}
+
+.button_ {
+  color: black;
+  border: #E0E0E0 solid 1px;
+  background: transparent;
+  padding: 10px 25px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.button_:hover {
+  color: #c82333;
+  border: #c82333 solid 1px;
+  background: #eca6ad;
+}
+
 
 .section {
   margin-bottom: 1.5rem;
@@ -161,5 +204,9 @@ button {
 .danger button {
   background: red;
   color: white;
+}
+
+.member {
+  display: flex;
 }
 </style>
