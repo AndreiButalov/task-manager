@@ -29,32 +29,103 @@ onMounted(load);
 </script>
 
 <template>
-    <div>
+    <div class="profile_content">
         <h1>Profil bearbeiten</h1>
 
-        <div>
-            <label>Vorname</label>
-            <input v-model="firstName" />
+        <div class="profile_content_form">
+            <div>
+                <label>Vorname:</label>
+                <input class="input" v-model="firstName" />
+            </div>
+
+            <div>
+                <label>Nachname:</label>
+                <input class="input" v-model="lastName" />
+            </div>
+
+            <div>
+                <label>E-Mail:</label>
+                <input class="input" :value="email" disabled />
+            </div>
         </div>
 
-        <div>
-            <label>Nachname</label>
-            <input v-model="lastName" />
+        <div class="profile_content_footer">
+            <button @click="saveProfile">
+                Speichern
+            </button>
         </div>
-
-        <div>
-            <label>E-Mail</label>
-            <input :value="email" disabled />
-        </div>
-
-        <button @click="saveProfile">
-            Speichern
-        </button>
-
-        <router-link class="to_profile" to="/dashboard">
-            Dashboard
-        </router-link>
 
         <p v-if="success">{{ success }}</p>
     </div>
 </template>
+
+
+<style scoped>
+h1 {
+    font-size: 22px;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.profile_content {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile_content_form div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;    
+    padding: 6px 0;
+}
+
+.profile_content_form label {
+    font-weight: 700;
+}
+
+.input {  
+  padding: 7px;
+  border-radius: 12px;
+  border: 1.5px solid lightgrey;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: 0px 0px 20px -18px;
+  margin-right: 15px;
+}
+
+.input:hover {
+  border: 2px solid lightgrey;
+  box-shadow: 0px 0px 20px -17px;
+}
+
+.input:active {
+  transform: scale(0.95);
+}
+
+.input:focus {
+  border: 2px solid grey;
+}
+
+.profile_content_footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 40px;
+}
+
+.profile_content_footer button {
+    color: black;
+    border: #E0E0E0 solid 1px;
+    background: transparent;
+    padding: 10px 25px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 20px;
+}
+
+.profile_content_footer button:hover {
+    color: #c82333;
+    border: #c82333 solid 1px;
+    background: #eca6ad;
+    
+}
+</style>

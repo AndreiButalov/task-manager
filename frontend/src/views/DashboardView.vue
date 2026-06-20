@@ -289,16 +289,13 @@ onMounted(async () => {
 
 .close {
   position: absolute;
-  right: -5px;
-  top: -26px;
-
+  right: 0px;
+  top: 0px;
   width: 28px;
   height: 28px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   color: #746b6b;
   border: #E0E0E0 solid 1px;
   background: transparent;
