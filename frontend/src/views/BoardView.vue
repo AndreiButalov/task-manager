@@ -51,14 +51,8 @@ async function deleteBoard(id) {
 
 async function loadMembers(board) {
   board.members = await loadBoardMembers(board.id);
-  console.log(board.members)
-
   availableMembers.value[board.id] = await loadAvailableMembers(board.id);
   memberSelection.value[board.id] = availableMembers.value[board.id]?.[0]?.id || null;
-}
-
-function openBoard(boardId) {
-  router.push({ name: "boardSingle", params: { id: boardId } })
 }
 
 function editBoard(boardId) {
@@ -88,10 +82,6 @@ onMounted(refreshBoards);
               {{ board.title }}
             </router-link>
             <div class="board-actions">
-              <button @click="openBoard(board.id)">
-                Open
-              </button>
-
               <button @click="editBoard(board.id)">
                 Edit
               </button>
@@ -104,15 +94,17 @@ onMounted(refreshBoards);
 
           <div class="members-section">
             <p><strong>Mitglieder:</strong></p>
-            <div class="member" v-for="member in board.members" :key="member.id">
-            {{ formatMemberName(member) }}
+            <div class="all_members">
+              <div class="member" v-for="member in board.members" :key="member.id">
+                {{ formatMemberName(member) }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div><router-link class="card" to="/dashboard">Dashboard</router-link></div>
+    <div><router-link class="card" to="/dashboard">Dashboard</router-link></div>
   </div>
 </template>
 
@@ -173,6 +165,25 @@ select:focus {
 .board-title {
   text-decoration: none;
   color: black;
+  cursor: pointer;
+}
+
+.board_title_edit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.board-actions {
+  display: flex;
+  gap: 20px;
+}
+
+.all_members {
+  height: 40px;
+  overflow-y: auto;
   cursor: pointer;
 }
 </style>
