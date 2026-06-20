@@ -76,3 +76,11 @@ export async function loadProfile() {
     email: data.email || "",
   };
 }
+
+export function formatMemberName(member) {
+  const user = member.user ?? member;
+
+  const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+
+  return fullName || user.email || "Unbekannt";
+}

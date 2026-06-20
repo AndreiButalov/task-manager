@@ -3,7 +3,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router"
 import api from "../services/api";
-import { loadBoards, loadBoardMembers, loadAvailableMembers } from '../services/boardService';
+import { loadBoards, loadBoardMembers, loadAvailableMembers, formatMemberName } from '../services/boardService';
 
 const boards = ref([]);
 const newTitle = ref("");
@@ -18,13 +18,6 @@ async function refreshBoards() {
   await Promise.all(boards.value.map((board) => loadMembers(board)));
 }
 
-function formatMemberName(member) {
-  const user = member.user ?? member
-
-  const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
-
-  return fullName || user.email || "Unbekannt"
-}
 
 async function createBoard() {
   const title = newTitle.value.trim();
