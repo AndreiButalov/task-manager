@@ -183,22 +183,32 @@ onMounted(loadBoardDetail);
 
             <div v-if="getList(column.position)">
               <div class="tasklist-card">
-                <h3>{{ getList(column.position).title }}</h3>
-                <ul class="tasks">
-                  <li v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card"
-                    draggable="true" @dragstart="startDragging(task.id)">
-                    <div v-if="editing[task.id]">
-                      <input type="text" v-model="editTitles[task.id]" />
-                      <textarea v-model="editDescriptions[task.id]"></textarea>
 
-                      <div class="task-edit-actions">
+                <h3>{{ getList(column.position).title }}</h3>
+
+                <div class="tasks">
+
+                  <div v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card"
+                    draggable="true" @dragstart="startDragging(task.id)">
+
+                    <div v-if="editing[task.id]" class="edit_task">
+
+                      <div class="edit_input">
+                        <input class="input" type="text" v-model="editTitles[task.id]" />
+                        <textarea class="textarea" v-model="editDescriptions[task.id]"></textarea>
+                      </div>
+
+                      <div class="task-edit">
                         <button @click="saveEdit(task)">Speichern</button>
                         <button @click="cancelEdit(task)" class="cancel-btn">
                           Abbrechen
                         </button>
                       </div>
+
                     </div>
+
                     <div v-else>
+
                       <strong>{{ task.title }}</strong>
 
                       <div class="task-meta">
@@ -210,21 +220,26 @@ onMounted(loadBoardDetail);
                         </small>
                       </div>
 
-                      <p v-if="task.description">{{ task.description }}</p>
+                      <p v-if="task.description">
+                        {{ task.description }}
+                      </p>
 
                       <div class="task-actions">
-                        <button class="nav_button" @click="startEdit(task)">Bearbeiten</button>
+                        <button class="nav_button" @click="startEdit(task)">
+                          Bearbeiten
+                        </button>
                         <button class="nav_button" @click="deleteTaskById(task.id)">
                           Löschen
                         </button>
                       </div>
                     </div>
-                  </li>
-
-                  <li v-if="getTasks(getList(column.position)).length === 0" class="task-card empty">
+                  </div>
+                  <div v-if="getTasks(getList(column.position)).length === 0" class="task-card empty">
                     Keine Tasks
-                  </li>
-                </ul>
+                  </div>
+
+                </div>
+
               </div>
             </div>
           </div>
@@ -360,6 +375,42 @@ onMounted(loadBoardDetail);
   background: #ffffff;
 }
 
+.textarea {
+  height: 100px;
+  font-size: 16px;
+  resize: none;
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.input,
+.textarea {
+  padding: 7px;
+  border-radius: 12px;
+  border: 1.5px solid lightgrey;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: 0px 0px 20px -18px;
+  margin-right: 15px;
+}
+
+.input:hover,
+.textarea:hover {
+  border: 2px solid lightgrey;
+  box-shadow: 0px 0px 20px -17px;
+}
+
+.input:active,
+textarea:active {
+  transform: scale(0.95);
+}
+
+.input:focus,
+textarea:focus {
+  border: 2px solid grey;
+}
+
 .task-meta {
   color: #6c757d;
   font-size: 0.85rem;
@@ -377,9 +428,11 @@ onMounted(loadBoardDetail);
 .task-actions {
   margin-top: 0.5rem;
   display: flex;
+  justify-content: space-between;
 }
 
-.task-actions button {
+.task-actions button,
+.task-edit button {
   color: black;
   border: #E0E0E0 solid 1px;
   background: transparent;
@@ -390,29 +443,11 @@ onMounted(loadBoardDetail);
   cursor: pointer;
 }
 
-.task-actions button:hover {
+.task-actions button:hover,
+.task-edit button:hover {
   color: #c82333;
   border: #c82333 solid 1px;
   background: #eca6ad;
-}
-
-
-.task-edit-actions {
-  margin-top: 0.5rem;
-  display: flex;
-  gap: 0.5rem;
-}
-
-.task-edit-actions button {
-  padding: 0.35rem 0.6rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.task-edit-actions .cancel-btn {
-  background: #6c757d;
-  color: white;
 }
 
 .task-card.empty {
@@ -452,5 +487,23 @@ onMounted(loadBoardDetail);
 
 .error {
   color: #c82333;
+}
+
+.edit_task {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit_input {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.task-edit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

@@ -43,7 +43,7 @@ const handleLogout = () => {
     </nav>
 </template>
 
-<style>
+<style scoped>
 .navbar {
     display: flex;
     justify-content: space-between;
