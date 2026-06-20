@@ -146,7 +146,7 @@ onMounted(async () => {
 .dashboard {
   max-width: 900px;
   margin: 3rem auto;
-  padding: 0 1rem;
+  padding: 1rem;
 }
 
 .dashboard-header {

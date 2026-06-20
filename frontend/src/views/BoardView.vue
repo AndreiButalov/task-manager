@@ -107,6 +107,11 @@ onMounted(refreshBoards);
 </template>
 
 <style scoped>
+
+.boards_content {
+  padding: 30px;
+}
+
 .boards_content input,
 select {
   padding: 7px;

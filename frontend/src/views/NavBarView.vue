@@ -16,8 +16,8 @@ const handleLogout = () => {
 
 <template>
     <nav class="navbar">
-        <div class="link_to_dashboard">
-            <h1>Task-manager </h1>
+        <div class="logo">
+            <img src="../assets/img/Logo.png" alt="">
         </div>
 
         <div class="links">
@@ -49,9 +49,8 @@ const handleLogout = () => {
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    background: #2c3e50;
-    color: white;
-    margin-bottom: 20px;
+    background: #414952;
+    color: white;    
     position: relative;
 }
 
@@ -86,6 +85,7 @@ h1 {
     color: white;
     font-weight: 700;
     cursor: pointer;
+    margin-right: 20px;
 }
 
 .setting button:hover {
@@ -154,5 +154,13 @@ button {
 
 .edit-profile-content {
     position: relative;
+}
+
+.logo {
+    margin-left: 20px;
+}
+
+.logo img {
+    width: 70px;    
 }
 </style>

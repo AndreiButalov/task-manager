@@ -161,7 +161,7 @@ onMounted(loadBoardDetail);
     <div v-else>
       <header class="board-header">
         <h1>{{ board.title }}</h1>
-        <p>Owner: {{ board.owner.email }}</p>
+        <p>Erstellt von:  {{ board.owner.email }}</p>
       </header>
 
       <section class="board-tasklists">
