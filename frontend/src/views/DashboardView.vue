@@ -1,12 +1,8 @@
 <script setup>
-import { useRouter } from 'vue-router'
-import { logout } from '../services/auth'
 import { loadBoards, loadBoard } from '../services/boardService'
 import { loadProfile } from '../services/boardService'
 import { ref, onMounted, computed } from "vue"
 import ProfileView from '@/views/ProfileView.vue'
-
-const router = useRouter()
 
 const firstName = ref("")
 const lastName = ref("")
@@ -78,13 +74,6 @@ async function load() {
   email.value = profile.email
 }
 
-
-const handleLogout = () => {
-  logout()
-  router.push({ name: 'login' })
-}
-
-
 onMounted(async () => {
   await Promise.all([
     refreshBoards(),
@@ -106,9 +95,7 @@ onMounted(async () => {
         <button class="to_profile" @click="showProfileModal = true">
           Profil bearbeiten
         </button>
-        <button @click="handleLogout">
-          Abmelden
-        </button>
+        
       </div>
       <div v-if="showProfileModal" class="window-to_profile" @click.self="showProfileModal = false">
         <div class="edit-profile-content">
