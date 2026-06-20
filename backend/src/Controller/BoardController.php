@@ -18,8 +18,7 @@ final class BoardController
     public function index(
         BoardRepository $boardRepository,
         #[CurrentUser] ?User $currentUser
-    ): JsonResponse
-    {
+    ): JsonResponse {
         if (!$currentUser) {
             return new JsonResponse([
                 'error' => 'User not authenticated'
@@ -33,12 +32,12 @@ final class BoardController
         foreach ($boards as $board) {
             $isOwner = $board->getOwner()?->getId() === $currentUser->getId();
             $isMember = $board->getMembers()->exists(
-                fn ($key, $member) => $member->getId() === $currentUser->getId()
+                fn($key, $member) => $member->getId() === $currentUser->getId()
             );
 
             if ($isOwner || $isMember) {
                 $memberIds = array_map(
-                    fn ($member) => $member->getId(),
+                    fn($member) => $member->getId(),
                     $board->getMembers()->toArray()
                 );
 
@@ -114,6 +113,8 @@ final class BoardController
             $data[] = [
                 'id' => $member->getId(),
                 'email' => $member->getEmail(),
+                'firstName' => $member->getFirstName(),
+                'lastName' => $member->getLastName(),
             ];
         }
 
@@ -133,7 +134,7 @@ final class BoardController
         }
 
         $memberIds = array_map(
-            fn ($member) => $member->getId(),
+            fn($member) => $member->getId(),
             $board->getMembers()->toArray()
         );
 
@@ -250,7 +251,7 @@ final class BoardController
 
         $isOwner = $board->getOwner()?->getId() === $currentUser->getId();
         $isMember = $board->getMembers()->exists(
-            fn ($key, $member) => $member->getId() === $currentUser->getId()
+            fn($key, $member) => $member->getId() === $currentUser->getId()
         );
 
         if (!$isOwner && !$isMember) {
@@ -258,11 +259,11 @@ final class BoardController
         }
 
         $taskLists = $board->getTaskLists()->toArray();
-        usort($taskLists, fn ($a, $b) => ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0));
+        usort($taskLists, fn($a, $b) => ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0));
 
         foreach ($taskLists as $taskList) {
             $tasks = $taskList->getTasks()->toArray();
-            usort($tasks, fn ($a, $b) => ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0));
+            usort($tasks, fn($a, $b) => ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0));
 
             $taskData = [];
             foreach ($tasks as $task) {
@@ -286,7 +287,7 @@ final class BoardController
         }
 
         $memberIds = array_map(
-            fn ($member) => $member->getId(),
+            fn($member) => $member->getId(),
             $board->getMembers()->toArray()
         );
 
