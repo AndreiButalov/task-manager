@@ -1,4 +1,5 @@
 <script setup>
+
 import { ref, onMounted } from "vue";
 import api from "../services/api";
 import { loadProfile } from "../services/boardService.js";
@@ -7,6 +8,7 @@ const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
 const success = ref("");
+const emit = defineEmits(['saved'])
 
 async function load() {
     const profile = await loadProfile();
@@ -23,6 +25,8 @@ async function saveProfile() {
     });
 
     success.value = "Profil gespeichert!";
+
+    emit('saved')
 }
 
 onMounted(load);
@@ -65,6 +69,7 @@ h1 {
     font-size: 22px;
     text-align: center;
     padding: 10px 0;
+    color: black;
 }
 
 .profile_content {
@@ -81,6 +86,7 @@ h1 {
 
 .profile_content_form label {
     font-weight: 700;
+    color: black;
 }
 
 .input{  

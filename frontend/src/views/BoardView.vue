@@ -102,9 +102,7 @@ onMounted(refreshBoards);
           </div>
         </div>
       </div>
-    </div>
-
-    <div><router-link class="card" to="/dashboard">Dashboard</router-link></div>
+    </div>    
   </div>
 </template>
 

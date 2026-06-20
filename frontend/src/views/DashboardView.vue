@@ -2,12 +2,12 @@
 import { loadBoards, loadBoard } from '../services/boardService'
 import { loadProfile } from '../services/boardService'
 import { ref, onMounted, computed } from "vue"
-import ProfileView from '@/views/ProfileView.vue'
+// import ProfileView from '@/views/ProfileView.vue'
 
 const firstName = ref("")
 const lastName = ref("")
 const email = ref("")
-const showProfileModal = ref(false)
+// const showProfileModal = ref(false)
 const boards = ref([])
 
 const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 })
@@ -91,7 +91,7 @@ onMounted(async () => {
           Willkommen zurück, {{ displayName }}.
         </p>
       </div>
-      <div class="setting">
+      <!-- <div class="setting">
         <button class="to_profile" @click="showProfileModal = true">
           Profil bearbeiten
         </button>
@@ -102,7 +102,7 @@ onMounted(async () => {
           <button class="close" @click="showProfileModal = false">✕</button>
           <ProfileView />
         </div>
-      </div>
+      </div> -->
     </header>    
 
     <section class="panel">
@@ -273,6 +273,7 @@ onMounted(async () => {
   padding: 10px;
 }
 
+
 .close {
   position: absolute;
   right: 0px;
@@ -297,7 +298,6 @@ onMounted(async () => {
 }
 
 .edit-profile-content {
-  position: relative;
-  
+  position: relative;  
 }
 </style>
