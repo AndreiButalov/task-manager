@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import api from "../services/api"
 import {
@@ -64,6 +64,16 @@ async function removeMember(userId) {
   await loadMembers()
 }
 
+const sortedMembers = computed(() => {
+  if (!board.value) return members.value
+
+  return [...members.value].sort((a, b) => {
+    if (a.id === board.value.owner?.id) return -1
+    if (b.id === board.value.owner?.id) return 1
+    return 0
+  })
+})
+
 onMounted(async () => {
   await loadBoard()
   await loadMembers()
@@ -89,9 +99,9 @@ onMounted(async () => {
     <hr />
 
     <div class="section">
-      <h2>Mitglieder</h2>
+      <h2>Mitglieder:</h2>
 
-      <div v-for="member in members" :key="member.id" class="member">
+      <div v-for="member in sortedMembers" :key="member.id" class="member">
         {{ member.email }}
 
         <button
@@ -127,8 +137,6 @@ onMounted(async () => {
         Board löschen
       </button>
     </div>
-
-    <router-link to="/boards">← Zurück</router-link>
 
   </div>
 </template>
@@ -209,6 +217,13 @@ button {
 .footer {
   display: flex;
   justify-content: center;
+  align-items: center;
+}
+
+.member {
+  margin: 10px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 </style>
