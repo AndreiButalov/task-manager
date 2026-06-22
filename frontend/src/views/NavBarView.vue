@@ -1,16 +1,21 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { logout } from '../services/auth'
 import { ref } from "vue"
 import ProfileView from '@/views/ProfileView.vue'
 
 const router = useRouter()
+const route = useRoute()
+
 const showProfileModal = ref(false)
 
 const handleLogout = () => {
     logout()
     router.push({ name: 'login' })
 }
+
+const isAuthPage = () =>
+    ['login', 'register'].includes(route.name)
 </script>
 
 
@@ -20,19 +25,22 @@ const handleLogout = () => {
             <img src="../assets/img/Logo.png" alt="">
         </div>
 
-        <div class="links">
-            <router-link to="/dashboard">Dashboard</router-link>
-            <router-link to="/boards">Boards</router-link>
-        </div>
+        <template v-if="!isAuthPage()">
+            <div class="links">
+                <router-link to="/dashboard">Dashboard</router-link>
+                <router-link to="/boards">Boards</router-link>
+            </div>
 
-        <div class="setting">
-            <button class="to_profile" @click="showProfileModal = true">
-                Profil bearbeiten
-            </button>
-            <button @click="handleLogout">
-                Abmelden
-            </button>
-        </div>
+            <div class="setting">
+                <button class="to_profile" @click="showProfileModal = true">
+                    Profil bearbeiten
+                </button>
+
+                <button @click="handleLogout">
+                    Abmelden
+                </button>
+            </div>
+        </template>
 
         <div v-if="showProfileModal" class="window-to_profile" @click.self="showProfileModal = false">
             <div class="edit-profile-content">
@@ -50,7 +58,7 @@ const handleLogout = () => {
     align-items: center;
     padding: 5px;
     background: #414952;
-    color: white;    
+    color: white;
     position: relative;
 }
 
@@ -62,7 +70,7 @@ h1 {
 .card {
     text-decoration: none;
     color: white;
-    cursor: pointer;    
+    cursor: pointer;
 }
 
 .links a {
@@ -161,6 +169,6 @@ button {
 }
 
 .logo img {
-    width: 70px;    
+    width: 70px;
 }
 </style>
