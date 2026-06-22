@@ -65,7 +65,7 @@ label {
 }
 
 input {
-  width: 90%;
+  width: 93%;
   padding: 0.75rem;
   margin-top: 0.5rem;
   border: 1px solid #ccc;
