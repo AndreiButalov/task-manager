@@ -334,7 +334,7 @@ onMounted(loadBoardDetail);
   padding: 0.75rem;
   border: 1px solid #ced4da;
   border-radius: 6px;
-  box-sizing: border-box; /* wichtig */
+  box-sizing: border-box;
 }
 
 .task-form-quick textarea {
@@ -420,7 +420,7 @@ textarea:focus {
   margin-top: 0.25rem;
 }
 
-.task-card p {
+.task-card p, strong {
   word-break: break-word;
   overflow-wrap: break-word;
   max-height: 100px;
