@@ -334,6 +334,7 @@ onMounted(loadBoardDetail);
   padding: 0.75rem;
   border: 1px solid #ced4da;
   border-radius: 6px;
+  box-sizing: border-box; /* wichtig */
 }
 
 .task-form-quick textarea {
@@ -387,12 +388,14 @@ onMounted(loadBoardDetail);
 .input,
 .textarea {
   padding: 7px;
+  width: 100%;
   border-radius: 12px;
   border: 1.5px solid lightgrey;
   outline: none;
   transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
   box-shadow: 0px 0px 20px -18px;
   margin-right: 15px;
+  box-sizing: border-box;
 }
 
 .input:hover,
