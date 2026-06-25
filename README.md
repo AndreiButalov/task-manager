@@ -18,8 +18,6 @@ Die Anwendung ist ein Kanban-Task-Manager ähnlich wie Trello.
 ### Frontend
 
 * Vue 3
-* Vite
-* Pinia (State Management)
 * Vue Router
 * Axios
 
