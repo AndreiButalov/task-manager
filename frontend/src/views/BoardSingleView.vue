@@ -1,21 +1,24 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { loadBoard, createTask, createTaskList, updateTask, deleteTask } from '../services/boardService';
+import { loadBoard, createTask, updateTask, deleteTask } from '../services/boardService';
 
-const route = useRoute();
-const board = ref(null);
-const error = ref('');
-const loading = ref(true);
-const boardId = Number(route.params.id);
-const columnTitles = ['Todo', 'In Progress', 'Done'];
-const newTaskTitles = ref({ 0: '', 1: '', 2: '' });
-const newTaskDescriptions = ref({ 0: '', 1: '', 2: '' });
-const showTaskForm = ref({ 0: false, 1: false, 2: false });
-const editing = ref({});
-const editTitles = ref({});
-const editDescriptions = ref({});
+const route = useRoute()
+const board = ref(null)
+const error = ref('')
+const loading = ref(true)
+const boardId = Number(route.params.id)
+const columnTitles = ['Todo', 'In Progress', 'Done']
+const newTaskTitles = ref({ 0: '', 1: '', 2: '' })
+const newTaskDescriptions = ref({ 0: '', 1: '', 2: '' })
+const showTaskForm = ref({ 0: false, 1: false, 2: false })
+const editing = ref({})
+const editTitles = ref({})
+const editDescriptions = ref({})
 const currentElement = ref('')
+const formErrors = ref({0: '', 1: '', 2: ''})
+const columns = computed(() => columnTitles.map((title, index) => ({ title, position: index })))
+
 
 async function loadBoardDetail() {
   try {
@@ -29,48 +32,46 @@ async function loadBoardDetail() {
   }
 }
 
+
 function getList(position) {
   return board.value?.taskLists?.find((list) => list.position === position) || null;
 }
 
+
 function getTasks(list) {
   return list?.tasks?.slice().sort((a, b) => a.position - b.position) || [];
 }
+
 
 async function addTask(position) {
   let list = getList(position);
   const title = newTaskTitles.value[position]?.trim();
   const description = newTaskDescriptions.value[position]?.trim();
 
+  formErrors.value[position] = '';
+
   if (!title) {
-    error.value = 'Task-Titel darf nicht leer sein.';
+    formErrors.value[position] = 'Task-Titel darf nicht leer sein.';
     return;
   }
 
-  if (!list) {
-    const listTitle = columnTitles[position];
-    try {
-      await createTaskList(boardId, listTitle, position);
-      await loadBoardDetail();
-      list = getList(position);
-    } catch (error) {
-      error.value = 'TaskListe konnte nicht erstellt werden.';
-      return;
-    }
-  }
-
   await createTask(list.id, title, description, getTasks(list).length);
+
   newTaskTitles.value[position] = '';
   newTaskDescriptions.value[position] = '';
+  formErrors.value[position] = '';
   showTaskForm.value[position] = false;
+
   await loadBoardDetail();
 }
+
 
 function startEdit(task) {
   editing.value[task.id] = true;
   editTitles.value[task.id] = task.title;
   editDescriptions.value[task.id] = task.description || '';
 }
+
 
 async function saveEdit(task) {
   const title = editTitles.value[task.id]?.trim();
@@ -90,9 +91,11 @@ async function saveEdit(task) {
   }
 }
 
+
 function cancelEdit(task) {
   editing.value[task.id] = false;
 }
+
 
 async function deleteTaskById(id) {
   if (!confirm('Task wirklich löschen?')) return;
@@ -104,6 +107,7 @@ async function deleteTaskById(id) {
     error.value = 'Task konnte nicht gelöscht werden.';
   }
 }
+
 
 function formatDate(dateString) {
   if (!dateString) return '';
@@ -119,12 +123,10 @@ function formatDate(dateString) {
 }
 
 
-const columns = computed(() => columnTitles.map((title, index) => ({ title, position: index })));
-
-
 function startDragging(taskId) {
   currentElement.value = taskId;
 }
+
 
 async function onDrop(targetPosition) {
   const taskId = currentElement.value;
@@ -150,8 +152,11 @@ async function onDrop(targetPosition) {
   }
 }
 
+
 onMounted(loadBoardDetail);
+
 </script>
+
 
 <template>
   <div class="board-single">
@@ -161,7 +166,7 @@ onMounted(loadBoardDetail);
     <div v-else>
       <header class="board-header">
         <h1>{{ board.title }}</h1>
-        <p>Erstellt von:  {{ board.owner.email }}</p>
+        <p>Erstellt von: {{ board.owner.email }}</p>
       </header>
 
       <section class="board-tasklists">
@@ -176,9 +181,20 @@ onMounted(loadBoardDetail);
 
             <div v-if="showTaskForm[column.position]" class="task-form-quick">
               <input type="text" v-model="newTaskTitles[column.position]" placeholder="Neue Aufgabe" />
+
               <textarea v-model="newTaskDescriptions[column.position]" placeholder="Beschreibung (optional)" />
-              <button @click="addTask(column.position)">Task hinzufügen</button>
-              <button @click="showTaskForm[column.position] = false" class="cancel-btn">Abbrechen</button>
+
+              <div v-if="formErrors[column.position]" class="form-error">
+                {{ formErrors[column.position] }}
+              </div>
+
+              <button @click="addTask(column.position)">
+                Task hinzufügen
+              </button>
+
+              <button @click="showTaskForm[column.position] = false" class="cancel-btn">
+                Abbrechen
+              </button>
             </div>
 
             <div v-if="getList(column.position)">
@@ -248,6 +264,7 @@ onMounted(loadBoardDetail);
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .board-single {
@@ -420,7 +437,8 @@ textarea:focus {
   margin-top: 0.25rem;
 }
 
-.task-card p, strong {
+.task-card p,
+strong {
   word-break: break-word;
   overflow-wrap: break-word;
   max-height: 100px;
@@ -508,5 +526,11 @@ textarea:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.form-error {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin: 6px 0;
 }
 </style>
