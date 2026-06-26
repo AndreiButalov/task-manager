@@ -11,6 +11,11 @@ const error = ref("");
 const memberSelection = ref({});
 const availableMembers = ref({});
 const router = useRouter()
+const showDeleteBoardModal = ref(false);
+const boardToDelete = ref(null);
+
+const showErrorModal = ref(false);
+const errorMessage = ref("");
 
 
 async function refreshBoards() {
@@ -35,11 +40,23 @@ async function createBoard() {
   await refreshBoards();
 }
 
-async function deleteBoard(id) {
-  if (!confirm("Board wirklich löschen?")) return;
+async function deleteBoard() {
+  try {
+    await api.delete(`/boards/${boardToDelete.value}`);
+    boardToDelete.value = null;
+    showDeleteBoardModal.value = false;
+    await refreshBoards();
+  } catch (err) {
+    console.error(err);
+    showDeleteBoardModal.value = false;
+    errorMessage.value = "Board konnte nicht gelöscht werden.";
+    showErrorModal.value = true;
+  }
+}
 
-  await api.delete(`/boards/${id}`);
-  await refreshBoards();
+function confirmDeleteBoard(id) {
+  boardToDelete.value = id;
+  showDeleteBoardModal.value = true;
 }
 
 async function loadMembers(board) {
@@ -79,7 +96,7 @@ onMounted(refreshBoards);
                 Edit
               </button>
 
-              <button @click="deleteBoard(board.id)" class="danger">
+              <button @click="confirmDeleteBoard(board.id)" class="danger">
                 Delete
               </button>
             </div>
@@ -95,12 +112,26 @@ onMounted(refreshBoards);
           </div>
         </div>
       </div>
-    </div>    
+    </div>
   </div>
+
+
+  <div v-if="showDeleteBoardModal" class="modal-overlay">
+  <div class="modal">
+    <h3>Board wirklich löschen?</h3>
+    <div class="modal-actions">
+      <button class="danger" @click="deleteBoard">
+        Ja, löschen
+      </button>
+      <button @click="showDeleteBoardModal = false">
+        Abbrechen
+      </button>
+    </div>
+  </div>
+</div>
 </template>
 
 <style scoped>
-
 .boards_content {
   padding: 30px;
 }
@@ -132,7 +163,8 @@ select:focus {
   border: 2px solid grey;
 }
 
-.boards_content button {
+.boards_content button,
+.modal-actions button {
   color: black;
   border: #E0E0E0 solid 1px;
   background: transparent;
@@ -143,7 +175,8 @@ select:focus {
   cursor: pointer;
 }
 
-.boards_content button:hover {
+.boards_content button:hover,
+.modal-actions button:hover {
   color: #c82333;
   border: #c82333 solid 1px;
   background: #eca6ad;
@@ -180,5 +213,38 @@ select:focus {
   height: 40px;
   overflow-y: auto;
   cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 300px;
+  text-align: center;
+}
+
+.modal-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.danger {
+  background: red;
+  color: white;
 }
 </style>
