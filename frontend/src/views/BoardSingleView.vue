@@ -482,7 +482,8 @@ strong {
 }
 
 .task-actions button,
-.task-edit button {
+.task-edit button,
+.modal-actions button {
   color: black;
   border: #E0E0E0 solid 1px;
   background: transparent;
@@ -494,7 +495,8 @@ strong {
 }
 
 .task-actions button:hover,
-.task-edit button:hover {
+.task-edit button:hover,
+.modal-actions button:hover {
   color: #c82333;
   border: #c82333 solid 1px;
   background: #eca6ad;
@@ -591,8 +593,5 @@ strong {
   justify-content: center;
 }
 
-.danger {
-  background: red;
-  color: white;
-}
+
 </style>
