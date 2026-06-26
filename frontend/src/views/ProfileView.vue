@@ -1,37 +1,3 @@
-<script setup>
-
-import { ref, onMounted } from "vue";
-import api from "../services/api";
-import { loadProfile } from "../services/boardService.js";
-
-const firstName = ref("");
-const lastName = ref("");
-const email = ref("");
-const success = ref("");
-const emit = defineEmits(['saved'])
-
-async function load() {
-    const profile = await loadProfile();
-
-    firstName.value = profile.firstName;
-    lastName.value = profile.lastName;
-    email.value = profile.email;
-}
-
-async function saveProfile() {
-    await api.put("/me", {
-        firstName: firstName.value,
-        lastName: lastName.value,
-    });
-
-    success.value = "Profil gespeichert!";
-
-    emit('saved')
-}
-
-onMounted(load);
-</script>
-
 <template>
     <div class="profile_content">
         <h1>Profil bearbeiten</h1>
@@ -62,6 +28,44 @@ onMounted(load);
         <p v-if="success">{{ success }}</p>
     </div>
 </template>
+
+
+<script setup>
+
+import { ref, onMounted } from "vue";
+import api from "../services/api";
+import { loadProfile } from "../services/boardService.js";
+
+const firstName = ref("")
+const lastName = ref("")
+const email = ref("")
+const success = ref("")
+const emit = defineEmits(['saved'])
+
+
+async function load() {
+    const profile = await loadProfile();
+
+    firstName.value = profile.firstName;
+    lastName.value = profile.lastName;
+    email.value = profile.email;
+}
+
+
+async function saveProfile() {
+    await api.put("/me", {
+        firstName: firstName.value,
+        lastName: lastName.value,
+    });
+
+    success.value = "Profil gespeichert!";
+
+    emit('saved')
+}
+
+
+onMounted(load);
+</script>
 
 
 <style scoped>

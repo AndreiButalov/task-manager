@@ -1,103 +1,7 @@
-<script setup>
-import { ref, onMounted, computed } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import api from "../services/api"
-import {
-  loadBoardMembers,
-  loadAvailableMembers,
-  addBoardMember,
-  removeBoardMember
-} from "../services/boardService"
-
-const route = useRoute()
-const router = useRouter()
-
-const boardId = route.params.id
-
-const board = ref(null)
-const title = ref("")
-const members = ref([])
-const availableMembers = ref([])
-const memberSelection = ref(null)
-const error = ref("")
-
-const showDeleteBoardModal = ref(false);
-const showBoardErrorModal = ref(false);
-const boardErrorMessage = ref("");
-
-async function loadBoard() {
-  const res = await api.get(`/boards/${boardId}`)
-  board.value = res.data
-  title.value = board.value.title
-}
-
-async function loadMembers() {
-  members.value = await loadBoardMembers(boardId)
-  availableMembers.value = await loadAvailableMembers(boardId)
-  memberSelection.value = availableMembers.value?.[0]?.id || null
-}
-
-async function saveTitle() {
-  if (!title.value.trim()) return
-
-  await api.put(`/boards/${boardId}`, {
-    title: title.value
-  })
-
-  error.value = "Gespeichert!"
-}
-
-async function deleteBoard() {
-  try {
-    await api.delete(`/boards/${boardId}`);
-    router.push("/boards");
-  } catch (err) {
-    console.error(err);
-    boardErrorMessage.value = "Board konnte nicht gelöscht werden.";
-    showBoardErrorModal.value = true;
-  }
-}
-
-async function addMember() {
-  if (!memberSelection.value) return
-
-  await addBoardMember(boardId, memberSelection.value)
-  await loadMembers()
-}
-
-async function removeMember(userId) {
-  if (!confirm("Mitglied entfernen?")) return
-
-  await removeBoardMember(boardId, userId)
-  await loadMembers()
-}
-
-const sortedMembers = computed(() => {
-  if (!board.value) return members.value
-
-  return [...members.value].sort((a, b) => {
-    if (a.id === board.value.owner?.id) return -1
-    if (b.id === board.value.owner?.id) return 1
-    return 0
-  })
-})
-
-function confirmDeleteBoard() {
-  showDeleteBoardModal.value = true;
-}
-
-onMounted(async () => {
-  await loadBoard()
-  await loadMembers()
-})
-
-</script>
-
 <template>
   <div class="board-edit">
 
     <h1>Board bearbeiten</h1>
-
     <div class="title_edit section">
       <p>Board Name:</p>
       <div>
@@ -159,7 +63,106 @@ onMounted(async () => {
       </div>
     </div>
   </div>
+
 </template>
+
+
+<script setup>
+import { ref, onMounted, computed } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import api from "../services/api"
+import { loadBoardMembers, loadAvailableMembers, addBoardMember, removeBoardMember } from "../services/boardService"
+
+const route = useRoute()
+const router = useRouter()
+const boardId = route.params.id
+const board = ref(null)
+const title = ref("")
+const members = ref([])
+const availableMembers = ref([])
+const memberSelection = ref(null)
+const error = ref("")
+const showDeleteBoardModal = ref(false)
+const showBoardErrorModal = ref(false)
+const boardErrorMessage = ref("")
+
+
+async function loadBoard() {
+  const res = await api.get(`/boards/${boardId}`)
+  board.value = res.data
+  title.value = board.value.title
+}
+
+
+async function loadMembers() {
+  members.value = await loadBoardMembers(boardId)
+  availableMembers.value = await loadAvailableMembers(boardId)
+  memberSelection.value = availableMembers.value?.[0]?.id || null
+}
+
+
+async function saveTitle() {
+  if (!title.value.trim()) return
+
+  await api.put(`/boards/${boardId}`, {
+    title: title.value
+  })
+
+  error.value = "Gespeichert!"
+}
+
+
+async function deleteBoard() {
+  try {
+    await api.delete(`/boards/${boardId}`);
+    router.push("/boards");
+  } catch (err) {
+    console.error(err);
+    boardErrorMessage.value = "Board konnte nicht gelöscht werden.";
+    showBoardErrorModal.value = true;
+  }
+}
+
+
+async function addMember() {
+  if (!memberSelection.value) return
+
+  await addBoardMember(boardId, memberSelection.value)
+  await loadMembers()
+}
+
+
+async function removeMember(userId) {
+  if (!confirm("Mitglied entfernen?")) return
+
+  await removeBoardMember(boardId, userId)
+  await loadMembers()
+}
+
+
+const sortedMembers = computed(() => {
+  if (!board.value) return members.value
+
+  return [...members.value].sort((a, b) => {
+    if (a.id === board.value.owner?.id) return -1
+    if (b.id === board.value.owner?.id) return 1
+    return 0
+  })
+})
+
+
+function confirmDeleteBoard() {
+  showDeleteBoardModal.value = true;
+}
+
+
+onMounted(async () => {
+  await loadBoard()
+  await loadMembers()
+})
+
+</script>
+
 
 <style scoped>
 .board-edit {
@@ -206,7 +209,6 @@ onMounted(async () => {
   border: #c82333 solid 1px;
   background: #eca6ad;
 }
-
 
 .section {
   margin-bottom: 1.5rem;
@@ -275,6 +277,4 @@ button {
   gap: 10px;
   justify-content: center;
 }
-
-
 </style>

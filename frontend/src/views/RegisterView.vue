@@ -27,6 +27,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -38,6 +39,7 @@ const password = ref('')
 const repeatPassword = ref('')
 const error = ref('')
 const success = ref('')
+
 
 const handleRegister = async () => {
   error.value = ''
@@ -56,7 +58,9 @@ const handleRegister = async () => {
     error.value = err.response?.data?.error || 'Registrierung fehlgeschlagen'
   }
 }
+
 </script>
+
 
 <style scoped>
 .auth-page {

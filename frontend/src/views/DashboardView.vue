@@ -1,3 +1,63 @@
+<template>
+  <div class="dashboard">
+    <header class="dashboard-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p>
+          Willkommen zurück, {{ displayName }}.
+        </p>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Schnellzugriff</h2>
+      <div class="cards">
+        <router-link class="card" to="/boards">
+          To Boards
+        </router-link>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Du bist in diese Boards angemeldet:</h2>
+      <ul class="board-list">
+        <li v-for="board in boards" :key="board.id">
+          {{ board.title }}
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel stats-panel">
+      <h2>Deine Aufgaben-Übersicht</h2>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <span class="stat-label">Gesamt</span>
+          <strong>{{ stats.total }}</strong>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Todo</span>
+          <strong>{{ stats.todo }}</strong>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">In Progress</span>
+          <strong>{{ stats.inProgress }}</strong>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Done</span>
+          <strong>{{ stats.done }}</strong>
+        </div>
+
+      </div>
+    </section>
+  </div>
+</template>
+
+
 <script setup>
 import { loadBoards, loadBoard } from '../services/boardService'
 import { loadProfile } from '../services/boardService'
@@ -7,8 +67,8 @@ const firstName = ref("")
 const lastName = ref("")
 const email = ref("")
 const boards = ref([])
-
 const stats = ref({ total: 0, todo: 0, inProgress: 0, done: 0 })
+
 
 const displayName = computed(() => {
   if (firstName.value || lastName.value) {
@@ -72,6 +132,7 @@ async function load() {
   email.value = profile.email
 }
 
+
 onMounted(async () => {
   await Promise.all([
     refreshBoards(),
@@ -79,67 +140,6 @@ onMounted(async () => {
   ])
 })
 </script>
-
-<template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <div>
-        <h1>Dashboard</h1>
-        <p>
-          Willkommen zurück, {{ displayName }}.
-        </p>
-      </div>     
-    </header>    
-
-    <section class="panel">
-      <h2>Schnellzugriff</h2>
-      <div class="cards">
-        <router-link class="card" to="/boards">
-          To Boards
-        </router-link>
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>Du bist in diese Boards angemeldet:</h2>
-      <ul class="board-list">
-        <li v-for="board in boards" :key="board.id">
-          {{ board.title }}
-        </li>
-      </ul>
-    </section>
-
-    <section class="panel stats-panel">
-      <h2>Deine Aufgaben-Übersicht</h2>
-
-      <div class="stats-grid">
-
-        <div class="stat-card">
-          <span class="stat-label">Gesamt</span>
-          <strong>{{ stats.total }}</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">Todo</span>
-          <strong>{{ stats.todo }}</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">In Progress</span>
-          <strong>{{ stats.inProgress }}</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">Done</span>
-          <strong>{{ stats.done }}</strong>
-        </div>
-
-      </div>
-    </section>
-
-  </div>
-</template>
-
 
 
 <style scoped>

@@ -1,3 +1,122 @@
+<template>
+  <div class="board-single">
+    <div v-if="loading">Lädt Board...</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-else>
+      <header class="board-header">
+        <h1>{{ board.title }}</h1>
+        <p>Erstellt von: {{ board.owner.email }}</p>
+      </header>
+
+      <section class="board-tasklists">
+        <div class="kanban-grid">
+          <div v-for="column in columns" :key="column.position" class="kanban-column" @dragover.prevent
+            @drop="onDrop(column.position)">
+            <header class="column-header">
+              <h2>{{ column.title }}</h2>
+              <button class="add-list-btn"
+                @click="showTaskForm[column.position] = !showTaskForm[column.position]">+</button>
+            </header>
+
+            <div v-if="showTaskForm[column.position]" class="task-form-quick">
+              <input type="text" v-model="newTaskTitles[column.position]" placeholder="Neue Aufgabe" />
+              <textarea v-model="newTaskDescriptions[column.position]" placeholder="Beschreibung (optional)" />
+              <div v-if="formErrors[column.position]" class="form-error">
+                {{ formErrors[column.position] }}
+              </div>
+
+              <button @click="addTask(column.position)">
+                Task hinzufügen
+              </button>
+
+              <button @click="showTaskForm[column.position] = false" class="cancel-btn">
+                Abbrechen
+              </button>
+            </div>
+
+            <div v-if="getList(column.position)">
+              <div class="tasklist-card">
+
+                <h3>{{ getList(column.position).title }}</h3>
+
+                <div class="tasks">
+
+                  <div v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card"
+                    draggable="true" @dragstart="startDragging(task.id)">
+
+                    <div v-if="editing[task.id]" class="edit_task">
+
+                      <div class="edit_input">
+                        <input class="input" type="text" v-model="editTitles[task.id]" />
+                        <textarea class="textarea" v-model="editDescriptions[task.id]"></textarea>
+                      </div>
+
+                      <div class="task-edit">
+                        <button @click="saveEdit(task)">Speichern</button>
+                        <button @click="cancelEdit(task)" class="cancel-btn">
+                          Abbrechen
+                        </button>
+                      </div>
+
+                    </div>
+
+                    <div v-else>
+
+                      <strong>{{ task.title }}</strong>
+
+                      <div class="task-meta">
+                        <small>
+                          Erstellt: {{ formatDate(task.createdAt) }}
+                          <span v-if="task.dueDate">
+                            • Fällig: {{ formatDate(task.dueDate) }}
+                          </span>
+                        </small>
+                      </div>
+
+                      <p v-if="task.description">
+                        {{ task.description }}
+                      </p>
+
+                      <div class="task-actions">
+                        <button class="nav_button" @click="startEdit(task)">
+                          Bearbeiten
+                        </button>
+                        <button class="nav_button" @click="confirmDeleteTask(task.id)">
+                          Löschen
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="getTasks(getList(column.position)).length === 0" class="task-card empty">
+                    Keine Tasks
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div v-if="showDeleteModal" class="modal-overlay">
+    <div class="modal">
+      <h3>Task wirklich löschen?</h3>
+
+      <div class="modal-actions">
+        <button @click="deleteTaskById" class="danger">
+          Ja, löschen
+        </button>
+
+        <button @click="showDeleteModal = false">
+          Abbrechen
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -18,11 +137,10 @@ const editDescriptions = ref({})
 const currentElement = ref('')
 const formErrors = ref({ 0: '', 1: '', 2: '' })
 const columns = computed(() => columnTitles.map((title, index) => ({ title, position: index })))
-const showDeleteModal = ref(false);
-const taskToDelete = ref(null);
-
-const showErrorModal = ref(false);
-const errorMessage = ref('');
+const showDeleteModal = ref(false)
+const taskToDelete = ref(null)
+const showErrorModal = ref(false)
+const errorMessage = ref('')
 
 
 async function loadBoardDetail() {
@@ -107,6 +225,7 @@ function confirmDeleteTask(id) {
   showDeleteModal.value = true;
 }
 
+
 async function deleteTaskById() {
   try {
     await deleteTask(taskToDelete.value);
@@ -165,134 +284,9 @@ async function onDrop(targetPosition) {
   }
 }
 
-
 onMounted(loadBoardDetail);
 
 </script>
-
-
-<template>
-  <div class="board-single">
-
-    <div v-if="loading">Lädt Board...</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
-      <header class="board-header">
-        <h1>{{ board.title }}</h1>
-        <p>Erstellt von: {{ board.owner.email }}</p>
-      </header>
-
-      <section class="board-tasklists">
-        <div class="kanban-grid">
-          <div v-for="column in columns" :key="column.position" class="kanban-column" @dragover.prevent
-            @drop="onDrop(column.position)">
-            <header class="column-header">
-              <h2>{{ column.title }}</h2>
-              <button class="add-list-btn"
-                @click="showTaskForm[column.position] = !showTaskForm[column.position]">+</button>
-            </header>
-
-            <div v-if="showTaskForm[column.position]" class="task-form-quick">
-              <input type="text" v-model="newTaskTitles[column.position]" placeholder="Neue Aufgabe" />
-
-              <textarea v-model="newTaskDescriptions[column.position]" placeholder="Beschreibung (optional)" />
-
-              <div v-if="formErrors[column.position]" class="form-error">
-                {{ formErrors[column.position] }}
-              </div>
-
-              <button @click="addTask(column.position)">
-                Task hinzufügen
-              </button>
-
-              <button @click="showTaskForm[column.position] = false" class="cancel-btn">
-                Abbrechen
-              </button>
-            </div>
-
-            <div v-if="getList(column.position)">
-              <div class="tasklist-card">
-
-                <h3>{{ getList(column.position).title }}</h3>
-
-                <div class="tasks">
-
-                  <div v-for="task in getTasks(getList(column.position))" :key="task.id" class="task-card"
-                    draggable="true" @dragstart="startDragging(task.id)">
-
-                    <div v-if="editing[task.id]" class="edit_task">
-
-                      <div class="edit_input">
-                        <input class="input" type="text" v-model="editTitles[task.id]" />
-                        <textarea class="textarea" v-model="editDescriptions[task.id]"></textarea>
-                      </div>
-
-                      <div class="task-edit">
-                        <button @click="saveEdit(task)">Speichern</button>
-                        <button @click="cancelEdit(task)" class="cancel-btn">
-                          Abbrechen
-                        </button>
-                      </div>
-
-                    </div>
-
-                    <div v-else>
-
-                      <strong>{{ task.title }}</strong>
-
-                      <div class="task-meta">
-                        <small>
-                          Erstellt: {{ formatDate(task.createdAt) }}
-                          <span v-if="task.dueDate">
-                            • Fällig: {{ formatDate(task.dueDate) }}
-                          </span>
-                        </small>
-                      </div>
-
-                      <p v-if="task.description">
-                        {{ task.description }}
-                      </p>
-
-                      <div class="task-actions">
-                        <button class="nav_button" @click="startEdit(task)">
-                          Bearbeiten
-                        </button>
-                        <button class="nav_button" @click="confirmDeleteTask(task.id)">
-                          Löschen
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="getTasks(getList(column.position)).length === 0" class="task-card empty">
-                    Keine Tasks
-                  </div>
-
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <div v-if="showDeleteModal" class="modal-overlay">
-  <div class="modal">
-    <h3>Task wirklich löschen?</h3>
-
-    <div class="modal-actions">
-      <button @click="deleteTaskById" class="danger">
-        Ja, löschen
-      </button>
-
-      <button @click="showDeleteModal = false">
-        Abbrechen
-      </button>
-    </div>
-  </div>
-</div>
-</template>
 
 
 <style scoped>
@@ -571,7 +565,7 @@ strong {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -592,6 +586,4 @@ strong {
   gap: 10px;
   justify-content: center;
 }
-
-
 </style>

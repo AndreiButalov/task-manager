@@ -1,24 +1,3 @@
-<script setup>
-import { useRouter, useRoute } from 'vue-router'
-import { logout } from '../services/auth'
-import { ref } from "vue"
-import ProfileView from '@/views/ProfileView.vue'
-
-const router = useRouter()
-const route = useRoute()
-
-const showProfileModal = ref(false)
-
-const handleLogout = () => {
-    logout()
-    router.push({ name: 'login' })
-}
-
-const isAuthPage = () =>
-    ['login', 'register'].includes(route.name)
-</script>
-
-
 <template>
     <nav class="navbar">
         <div class="logo">
@@ -50,6 +29,30 @@ const isAuthPage = () =>
         </div>
     </nav>
 </template>
+
+
+<script setup>
+import { useRouter, useRoute } from 'vue-router'
+import { logout } from '../services/auth'
+import { ref } from "vue"
+import ProfileView from '@/views/ProfileView.vue'
+
+const router = useRouter()
+const route = useRoute()
+const showProfileModal = ref(false)
+
+
+const handleLogout = () => {
+    logout()
+    router.push({ name: 'login' })
+}
+
+
+const isAuthPage = () =>
+    ['login', 'register'].includes(route.name)
+
+</script>
+
 
 <style scoped>
 .navbar {

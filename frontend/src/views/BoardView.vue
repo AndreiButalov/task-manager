@@ -1,78 +1,3 @@
-<script setup>
-
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router"
-import api from "../services/api";
-import { loadBoards, loadBoardMembers, loadAvailableMembers, formatMemberName } from '../services/boardService';
-
-const boards = ref([]);
-const newTitle = ref("");
-const error = ref("");
-const memberSelection = ref({});
-const availableMembers = ref({});
-const router = useRouter()
-const showDeleteBoardModal = ref(false);
-const boardToDelete = ref(null);
-
-const showErrorModal = ref(false);
-const errorMessage = ref("");
-
-
-async function refreshBoards() {
-  boards.value = await loadBoards();
-  await Promise.all(boards.value.map((board) => loadMembers(board)));
-}
-
-
-async function createBoard() {
-  const title = newTitle.value.trim();
-
-  if (!title) {
-    error.value = "Titel darf nicht leer sein";
-    return;
-  }
-
-  await api.post("/boards", {
-    title,
-  });
-
-  newTitle.value = "";
-  await refreshBoards();
-}
-
-async function deleteBoard() {
-  try {
-    await api.delete(`/boards/${boardToDelete.value}`);
-    boardToDelete.value = null;
-    showDeleteBoardModal.value = false;
-    await refreshBoards();
-  } catch (err) {
-    console.error(err);
-    showDeleteBoardModal.value = false;
-    errorMessage.value = "Board konnte nicht gelöscht werden.";
-    showErrorModal.value = true;
-  }
-}
-
-function confirmDeleteBoard(id) {
-  boardToDelete.value = id;
-  showDeleteBoardModal.value = true;
-}
-
-async function loadMembers(board) {
-  board.members = await loadBoardMembers(board.id);
-  availableMembers.value[board.id] = await loadAvailableMembers(board.id);
-  memberSelection.value[board.id] = availableMembers.value[board.id]?.[0]?.id || null;
-}
-
-function editBoard(boardId) {
-  router.push({ name: "boardEdit", params: { id: boardId } })
-}
-
-
-onMounted(refreshBoards);
-</script>
-
 <template>
   <div class="boards_content">
     <h1>Boards</h1>
@@ -82,7 +7,6 @@ onMounted(refreshBoards);
         <button>Create</button>
       </form>
     </div>
-
     <hr />
     <div class="boards_body">
       <div class="board-card" v-for="board in boards" :key="board.id">
@@ -117,19 +41,98 @@ onMounted(refreshBoards);
 
 
   <div v-if="showDeleteBoardModal" class="modal-overlay">
-  <div class="modal">
-    <h3>Board wirklich löschen?</h3>
-    <div class="modal-actions">
-      <button class="danger" @click="deleteBoard">
-        Ja, löschen
-      </button>
-      <button @click="showDeleteBoardModal = false">
-        Abbrechen
-      </button>
+    <div class="modal">
+      <h3>Board wirklich löschen?</h3>
+      <div class="modal-actions">
+        <button class="danger" @click="deleteBoard">
+          Ja, löschen
+        </button>
+        <button @click="showDeleteBoardModal = false">
+          Abbrechen
+        </button>
+      </div>
     </div>
   </div>
-</div>
 </template>
+
+
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router"
+import api from "../services/api";
+import { loadBoards, loadBoardMembers, loadAvailableMembers, formatMemberName } from '../services/boardService';
+
+const boards = ref([])
+const newTitle = ref("")
+const error = ref("")
+const memberSelection = ref({})
+const availableMembers = ref({})
+const router = useRouter()
+const showDeleteBoardModal = ref(false)
+const boardToDelete = ref(null)
+const showErrorModal = ref(false)
+const errorMessage = ref("")
+
+
+async function refreshBoards() {
+  boards.value = await loadBoards();
+  await Promise.all(boards.value.map((board) => loadMembers(board)));
+}
+
+
+async function createBoard() {
+  const title = newTitle.value.trim();
+
+  if (!title) {
+    error.value = "Titel darf nicht leer sein";
+    return;
+  }
+
+  await api.post("/boards", {
+    title,
+  });
+
+  newTitle.value = "";
+  await refreshBoards();
+}
+
+
+async function deleteBoard() {
+  try {
+    await api.delete(`/boards/${boardToDelete.value}`);
+    boardToDelete.value = null;
+    showDeleteBoardModal.value = false;
+    await refreshBoards();
+  } catch (err) {
+    console.error(err);
+    showDeleteBoardModal.value = false;
+    errorMessage.value = "Board konnte nicht gelöscht werden.";
+    showErrorModal.value = true;
+  }
+}
+
+
+function confirmDeleteBoard(id) {
+  boardToDelete.value = id;
+  showDeleteBoardModal.value = true;
+}
+
+
+async function loadMembers(board) {
+  board.members = await loadBoardMembers(board.id);
+  availableMembers.value[board.id] = await loadAvailableMembers(board.id);
+  memberSelection.value[board.id] = availableMembers.value[board.id]?.[0]?.id || null;
+}
+
+
+function editBoard(boardId) {
+  router.push({ name: "boardEdit", params: { id: boardId } })
+}
+
+
+onMounted(refreshBoards);
+</script>
+
 
 <style scoped>
 .boards_content {
@@ -221,7 +224,7 @@ select:focus {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;

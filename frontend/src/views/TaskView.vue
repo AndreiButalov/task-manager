@@ -1,26 +1,3 @@
-<script setup>
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import api from "@/services/api";
-
-const route = useRoute();
-const task = ref(null);
-
-const loadTask = async () => {
-  try {
-    const res = await api.get("/tasks");
-
-    task.value = res.data.find(
-      (t) => t.id === Number(route.params.id)
-    );
-  } catch (error) {
-    console.error("Error loading task:", error);
-  }
-};
-
-onMounted(loadTask);
-</script>
-
 <template>
   <div class="task-page" v-if="task">
     <h1>{{ task.title }}</h1>
@@ -40,6 +17,32 @@ onMounted(loadTask);
     <p>Loading task...</p>
   </div>
 </template>
+
+
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import api from "@/services/api";
+
+const route = useRoute()
+const task = ref(null)
+
+
+const loadTask = async () => {
+  try {
+    const res = await api.get("/tasks");
+
+    task.value = res.data.find(
+      (t) => t.id === Number(route.params.id)
+    );
+  } catch (error) {
+    console.error("Error loading task:", error);
+  }
+};
+
+onMounted(loadTask);
+</script>
+
 
 <style scoped>
 .task-page {
