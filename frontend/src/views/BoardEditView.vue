@@ -21,6 +21,10 @@ const availableMembers = ref([])
 const memberSelection = ref(null)
 const error = ref("")
 
+const showDeleteBoardModal = ref(false);
+const showBoardErrorModal = ref(false);
+const boardErrorMessage = ref("");
+
 async function loadBoard() {
   const res = await api.get(`/boards/${boardId}`)
   board.value = res.data
@@ -44,10 +48,14 @@ async function saveTitle() {
 }
 
 async function deleteBoard() {
-  if (!confirm("Board wirklich löschen?")) return
-
-  await api.delete(`/boards/${boardId}`)
-  router.push("/boards")
+  try {
+    await api.delete(`/boards/${boardId}`);
+    router.push("/boards");
+  } catch (err) {
+    console.error(err);
+    boardErrorMessage.value = "Board konnte nicht gelöscht werden.";
+    showBoardErrorModal.value = true;
+  }
 }
 
 async function addMember() {
@@ -73,6 +81,10 @@ const sortedMembers = computed(() => {
     return 0
   })
 })
+
+function confirmDeleteBoard() {
+  showDeleteBoardModal.value = true;
+}
 
 onMounted(async () => {
   await loadBoard()
@@ -104,22 +116,14 @@ onMounted(async () => {
       <div v-for="member in sortedMembers" :key="member.id" class="member">
         {{ member.email }}
 
-        <button
-          class="button_"
-          v-if="member.id !== board.owner?.id"
-          @click="removeMember(member.id)"
-        >
+        <button class="button_" v-if="member.id !== board.owner?.id" @click="removeMember(member.id)">
           Entfernen
         </button>
       </div>
 
       <div v-if="availableMembers.length">
         <select v-model="memberSelection">
-          <option
-            v-for="m in availableMembers"
-            :key="m.id"
-            :value="m.id"
-          >
+          <option v-for="m in availableMembers" :key="m.id" :value="m.id">
             {{ m.email }}
           </option>
         </select>
@@ -133,11 +137,27 @@ onMounted(async () => {
     <hr />
 
     <div class="section footer">
-      <button class="button_" @click="deleteBoard">
+      <button class="button_" @click="confirmDeleteBoard">
         Board löschen
       </button>
     </div>
 
+  </div>
+
+  <div v-if="showDeleteBoardModal" class="modal-overlay">
+    <div class="modal">
+      <h3>Board wirklich löschen?</h3>
+
+      <div class="modal-actions">
+        <button class="button_" @click="deleteBoard">
+          Ja, löschen
+        </button>
+
+        <button class="button_" @click="showDeleteBoardModal = false">
+          Abbrechen
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -151,7 +171,7 @@ onMounted(async () => {
 .title_edit {
   display: flex;
   justify-content: space-between;
-  align-content: center;  
+  align-content: center;
 }
 
 .title_edit p {
@@ -196,7 +216,8 @@ onMounted(async () => {
   background: #fff;
 }
 
-input, select {
+input,
+select {
   padding: 8px;
   margin-right: 10px;
   border-radius: 8px;
@@ -226,4 +247,34 @@ button {
   justify-content: space-between;
   align-items: center;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 300px;
+  text-align: center;
+}
+
+.modal-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+
 </style>
