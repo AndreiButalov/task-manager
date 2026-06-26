@@ -16,8 +16,13 @@ const editing = ref({})
 const editTitles = ref({})
 const editDescriptions = ref({})
 const currentElement = ref('')
-const formErrors = ref({0: '', 1: '', 2: ''})
+const formErrors = ref({ 0: '', 1: '', 2: '' })
 const columns = computed(() => columnTitles.map((title, index) => ({ title, position: index })))
+const showDeleteModal = ref(false);
+const taskToDelete = ref(null);
+
+const showErrorModal = ref(false);
+const errorMessage = ref('');
 
 
 async function loadBoardDetail() {
@@ -97,14 +102,22 @@ function cancelEdit(task) {
 }
 
 
-async function deleteTaskById(id) {
-  if (!confirm('Task wirklich löschen?')) return;
+function confirmDeleteTask(id) {
+  taskToDelete.value = id;
+  showDeleteModal.value = true;
+}
+
+async function deleteTaskById() {
   try {
-    await deleteTask(id);
+    await deleteTask(taskToDelete.value);
+    showDeleteModal.value = false;
+    taskToDelete.value = null;
     await loadBoardDetail();
   } catch (err) {
     console.error(err);
-    error.value = 'Task konnte nicht gelöscht werden.';
+    showDeleteModal.value = false;
+    errorMessage.value = 'Task konnte nicht gelöscht werden.';
+    showErrorModal.value = true;
   }
 }
 
@@ -244,7 +257,7 @@ onMounted(loadBoardDetail);
                         <button class="nav_button" @click="startEdit(task)">
                           Bearbeiten
                         </button>
-                        <button class="nav_button" @click="deleteTaskById(task.id)">
+                        <button class="nav_button" @click="confirmDeleteTask(task.id)">
                           Löschen
                         </button>
                       </div>
@@ -263,6 +276,22 @@ onMounted(loadBoardDetail);
       </section>
     </div>
   </div>
+
+  <div v-if="showDeleteModal" class="modal-overlay">
+  <div class="modal">
+    <h3>Task wirklich löschen?</h3>
+
+    <div class="modal-actions">
+      <button @click="deleteTaskById" class="danger">
+        Ja, löschen
+      </button>
+
+      <button @click="showDeleteModal = false">
+        Abbrechen
+      </button>
+    </div>
+  </div>
+</div>
 </template>
 
 
@@ -532,5 +561,38 @@ strong {
   color: #dc3545;
   font-size: 0.85rem;
   margin: 6px 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 300px;
+  text-align: center;
+}
+
+.modal-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.danger {
+  background: red;
+  color: white;
 }
 </style>
