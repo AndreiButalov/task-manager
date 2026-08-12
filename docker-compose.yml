@@ -1,0 +1,64 @@
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: task-manager-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: task_manager
+      MYSQL_USER: task_manager
+      MYSQL_PASSWORD: task_manager
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - task-manager-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PHP Backend (Symfony)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: task-manager-backend
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: 1
+      DATABASE_URL: mysql://task_manager:task_manager@db:3306/task_manager
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - task-manager-network
+    command: "bash -c 'composer install && php -S 0.0.0.0:80 -t public'"
+
+  # Frontend (Vue.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: task-manager-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - task-manager-network
+    command: "npm run dev"
+
+volumes:
+  mysql_data:
+
+networks:
+  task-manager-network:
+    driver: bridge
