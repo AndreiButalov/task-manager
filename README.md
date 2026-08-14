@@ -35,7 +35,7 @@ task-manager/
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Installation mit Docker
 
 ### 1. Repository clonen
 
@@ -44,64 +44,22 @@ git clone https://github.com/AndreiButalov/task-manager.git
 cd task-manager
 ```
 
----
-
-## 🧩 Backend Setup (Symfony)
+### 2. Docker Container starten
 
 ```bash
-cd backend
-
-composer install
+docker-compose up -d
 ```
 
-### Server starten
+Dies startet automatisch:
+* **Backend** (Symfony) - läuft auf `http://localhost:8000`
+* **Frontend** (Vue) - läuft auf `http://localhost:5173`
+* **PostgreSQL Datenbank**
+
+### 3. Datenbank initialisieren (einmalig)
 
 ```bash
-symfony server:start
+docker-compose exec backend php bin/console doctrine:migrations:migrate
 ```
-
-Backend läuft dann auf:
-
-```
-http://127.0.0.1:8000
-```
-
----
-
-## 🎨 Frontend Setup (Vue)
-
-```bash
-cd frontend
-
-npm install
-npm run dev
-```
-
-Frontend läuft auf:
-
-```
-http://localhost:5173
-```
-
----
-
-## 📦 Features (geplant)
-
-### MVP
-
-* User Registrierung & Login
-* Boards erstellen
-* Listen (To Do / In Progress / Done)
-* Tasks erstellen & bearbeiten
-* Tasks verschieben
-
-### Erweiterungen
-
-* Drag & Drop (Kanban)
-* Labels & Tags
-* Deadlines
-* Team Collaboration
-* Activity Log
 
 ---
 
